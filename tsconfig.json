@@ -1,0 +1,8 @@
+// prettier-ignore
+{
+  "extends": "@tsconfig/react-native/tsconfig.json",
+  "compilerOptions": {
+    "jsx": "react",
+    "skipLibCheck": true
+  }
+}
