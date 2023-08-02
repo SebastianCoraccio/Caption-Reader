@@ -89,7 +89,6 @@ When navigating to one of those folders in the app a manifest file is requests f
 
 The video file, caption data, and thumbnail are all stored in this directory with the same base file name with different extensions (`.mp4`, `.json`, `.png`).
 
-In the future, I may make the directory structure more flat with a single manifest to make adding file management tools simpler. As the single user, I doubt I will hit any major file size issues.
 <br/><br/>
 
 ### Video download and processing

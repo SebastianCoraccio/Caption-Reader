@@ -1,7 +1,7 @@
 const fs = require('fs');
 const {processVtt} = require('./process-vtt');
 const {exec} = require('child_process');
-const {uploadToS3} = require('./s3');
+const {uploadToS3, downloadFromS3} = require('./s3');
 
 function readFileData(fileName) {
   try {
@@ -36,8 +36,9 @@ function downloadYoutubeData(fileMeta, directory) {
 
 async function processFiles(directory) {
   const files = JSON.parse(readFileData(`./${directory}/.files.json`));
-  const manifest = JSON.parse(readFileData(`./${directory}/.manifest.json`));
-
+  const manifest = await downloadFromS3({file: `${directory}/.manifest.json`});
+  console.log(manifest);
+  throw new Error();
   for (const [index, file] of files.entries()) {
     if (manifest.findIndex(m => m.title === file.title) !== -1) {
       console.log('Skipping', file.title);
@@ -90,10 +91,3 @@ async function processFiles(directory) {
     console.log(`${prefix} ${file.title} completed`);
   }
 }
-
-const directory = process.argv[2];
-if (!directory) {
-  console.error('Usage: node process-files.js [directory name]');
-  return;
-}
-processFiles(directory);

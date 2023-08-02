@@ -7,11 +7,9 @@ const s3 = new AWS.S3({
   secretAccessKey: config.AWS_SECRET_ACCESS_KEY,
 });
 
-// TODO when I update how files are stored I need to make the use of
-// 'bucket' more consistent and understandable
-function uploadToS3({file, bucket}) {
+function uploadToS3({file}) {
   return new Promise((resolve, reject) => {
-    console.log(`Uploading ${config.S3_BUCKET}/${bucket}/${file}`);
+    console.log(`Uploading ${config.S3_BUCKET}/${file}`);
     const fileData = fs.readFileSync(file);
     s3.upload({
       Bucket: config.S3_BUCKET,
@@ -27,6 +25,24 @@ function uploadToS3({file, bucket}) {
   });
 }
 
+function downloadFromS3({file}) {
+  return new Promise((resolve, reject) => {
+    s3.getObject({
+      Bucket: config.S3_BUCKET,
+      Key: file,
+    })
+      .promise()
+      .then(result => {
+        const jsonResult = JSON.parse(
+          Buffer.from(result.Body, 'base64').toString('utf-8'),
+        );
+        resolve(jsonResult);
+      })
+      .catch(reject);
+  });
+}
+
 module.exports = {
   uploadToS3,
+  downloadFromS3,
 };
