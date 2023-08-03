@@ -72,3 +72,5 @@ buck-out/
 /content-generation/*.mp4
 /content-generation/*.part
 content-generation/*/
+
+config.js

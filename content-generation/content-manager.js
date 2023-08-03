@@ -1,5 +1,9 @@
 const readline = require('readline');
-const s3 = require('./s3');
+const {downloadFromS3, uploadDataToS3} = require('./s3');
+
+// I normally don't prefer using globals, but a CLI tool
+// seems like a decent use case
+let folderManifest = [];
 
 function askQuestion(query) {
   const rl = readline.createInterface({
@@ -15,16 +19,17 @@ function askQuestion(query) {
   );
 }
 
-async function addVideo() {
-  const currentManifest = await s3.downloadFromS3({file: '.manifest.json'});
+async function selectCategory() {
+  if (folderManifest.length === 0) {
+    console.log('No categories have been created yet. Please make one.');
+    await addCategory();
+  }
 
   console.log('The current categories are:');
-  currentManifest.forEach((category, index) =>
+  folderManifest.forEach((category, index) =>
     console.log(`${index + 1}. ${category.title}`),
   );
-  console.log(`${currentManifest.length + 1}. Add new category`);
-
-  // TODO the case where there are no categories is not handled
+  console.log(`${folderManifest.length + 1}. Add new category`);
 
   const category = Number(
     await askQuestion('Which category would you like to add to?\n'),
@@ -35,21 +40,36 @@ async function addVideo() {
     return;
   }
 
-  if (category === currentManifest.length + 1) {
+  if (category === folderManifest.length + 1) {
     console.log('Creating a new category');
-    await addCategory(currentManifest);
-  } else {
-    console.log('Selected', currentManifest[category - 1].title);
+    await addCategory();
   }
+
+  console.log('Selected', folderManifest[category - 1].title);
+  return folderManifest[category - 1].title;
 }
 
-async function addCategory(currentManifest) {
+async function addCategory() {
   const categoryName = await askQuestion(
     'What is the new category called? Use kebab case i.e. complete-beginner\n',
   );
+
+  folderManifest.push({title: `${categoryName}/`, type: 'folder'});
+  await uploadDataToS3({
+    key: '.manifest.json',
+    data: folderManifest,
+  });
+}
+
+async function setup() {
+  try {
+    folderManifest = await downloadFromS3({file: '.manifest.json'});
+  } catch (err) {}
 }
 
 async function main() {
+  await setup();
+
   const ans = await askQuestion(`Which would you like to do?
   1. Add video
   2. Remove video
@@ -58,7 +78,7 @@ async function main() {
 
   switch (ans) {
     case '1': {
-      await addVideo();
+      const category = await selectCategory();
       break;
     }
     case '2': {

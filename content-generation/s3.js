@@ -1,6 +1,8 @@
 const fs = require('fs');
 const AWS = require('aws-sdk');
 const config = require('../config');
+const zlib = require('zlib');
+const Readable = require('stream').Readable;
 
 const s3 = new AWS.S3({
   accessKeyId: config.AWS_ACCESS_KEY_ID,
@@ -19,6 +21,29 @@ function uploadToS3({file}) {
       .promise()
       .then(result => {
         console.log(`Completed upload of ${file}`);
+        resolve(result);
+      })
+      .catch(reject);
+  });
+}
+
+function uploadDataToS3({key, data}) {
+  return new Promise((resolve, reject) => {
+    console.log(`Uploading data to ${config.S3_BUCKET}/${key}`);
+    const body = new Readable();
+
+    body.push(JSON.stringify(data));
+    body.push(null);
+    body.pipe(zlib.createGzip());
+
+    s3.upload({
+      Bucket: config.S3_BUCKET,
+      Body: body,
+      Key: key,
+    })
+      .promise()
+      .then(result => {
+        console.log(`Completed upload of ${key}`);
         resolve(result);
       })
       .catch(reject);
@@ -45,4 +70,5 @@ function downloadFromS3({file}) {
 module.exports = {
   uploadToS3,
   downloadFromS3,
+  uploadDataToS3,
 };
