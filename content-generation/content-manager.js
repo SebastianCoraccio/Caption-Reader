@@ -20,6 +20,17 @@ function askQuestion(query) {
   );
 }
 
+async function requestNumberedOption(query, min, max) {
+  const response = Number(await askQuestion(query));
+
+  if (isNaN(response) || response < min || response > max) {
+    console.log(`Please select an option between ${min} and ${max}`);
+    return requestNumberedOption(query, min, max);
+  }
+
+  return response;
+}
+
 async function selectCategory() {
   if (folderManifest.length === 0) {
     console.log('No categories have been created yet. Please make one.');
@@ -32,14 +43,11 @@ async function selectCategory() {
   );
   console.log(`${folderManifest.length + 1}. Add new category`);
 
-  const category = Number(
-    await askQuestion('Which category would you like to add to?\n'),
+  const category = await requestNumberedOption(
+    'Which category would you like to add to?\n',
+    1,
+    folderManifest.length + 1,
   );
-
-  // TODO this would be nice to have a helper function for
-  if (isNaN(category) || category < 0 || category > category.length) {
-    return;
-  }
 
   if (category === folderManifest.length + 1) {
     console.log('Creating a new category');
@@ -83,14 +91,18 @@ async function setup() {
 async function main() {
   await setup();
 
-  const ans = await askQuestion(`Which would you like to do?
-    1. Add video
-    2. Remove video
-    3. Remove category
-  `);
+  const ans = await requestNumberedOption(
+    `Which would you like to do?
+1. Add video
+2. Remove video
+3. Remove category
+`,
+    1,
+    3,
+  );
 
   switch (ans) {
-    case '1': {
+    case 1: {
       const category = await selectCategory();
       const {title, youtubeId} = await getVideoInfo();
       await processYouTubeVideo({
@@ -101,19 +113,13 @@ async function main() {
       break;
     }
 
-    case '2': {
+    case 2: {
       console.log("This hasn't been implemented yet.\nBye!");
       break;
     }
-    case '3': {
+    case 3: {
       console.log("This hasn't been implemented yet.\nBye!");
       break;
-    }
-    default: {
-      console.log(
-        "\nI don't recognize that option. Please enter the number of the option you'd like",
-      );
-      main();
     }
   }
 }

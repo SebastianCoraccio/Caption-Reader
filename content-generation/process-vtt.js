@@ -69,16 +69,6 @@ function processVtt(vttString) {
         lines: splitLines,
       };
     });
-  fs.writeFile(
-    'vtt.json',
-    JSON.stringify(parts, null, 2),
-    'utf8',
-    function (err) {
-      if (err) {
-        return console.log(err);
-      }
-    },
-  );
   return parts;
 }
 

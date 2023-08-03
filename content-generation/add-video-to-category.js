@@ -51,18 +51,8 @@ async function processYouTubeVideo({directory, youtubeId, title}) {
     captions: processVtt(vtt),
   };
 
-  fs.writeFileSync(
-    `${title}.json`,
-    JSON.stringify(fileCaptionData, null, 2),
-    'utf8',
-    function (err) {
-      if (err) {
-        return console.log(err);
-      }
-    },
-  );
-  await uploadToS3({
-    file: `${title}.json`,
+  await uploadDataToS3({
+    file: fileCaptionData,
     key: `${directory}/${title}.json`,
   });
   await uploadToS3({
@@ -79,7 +69,6 @@ async function processYouTubeVideo({directory, youtubeId, title}) {
     type: 'video',
   });
 
-  // update manifest
   await uploadDataToS3({
     key: `${directory}/.manifest.json`,
     data: fileManifest,
