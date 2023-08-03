@@ -93,13 +93,26 @@ The video file, caption data, and thumbnail are all stored in this directory wit
 
 ### Video download and processing
 
-The first step is getting a list of videos to be downloaded. In my case, I wrote automation using Playwright to scrap all videos from the Comprehensible Japanese site. The automation finds the YouTube video IDs and downloads some caption data from the website to be used for [furigana](https://en.wikipedia.org/wiki/Furigana). Furigana data is not part of the caption data pulled from YouTube. I will not be including that automation in this repo.
+**Prerequisites:**
 
-However, I am including the scripts I use to pull videos and captions from YouTube. They can be found in `/content-generation`. A quick summary of what happens in the file is:
+1. `yt-dlp` is used to download videos and captions from YouTube. `youtube-dl` worked for me at one point, but stopped after a few months. `yt-dlp` is a fork that does the same thing.
+   `pip3 install yt-dlp`
 
-- With a list of YouTube IDs, the program `youtube-dl` is used to download the video, thumbnail, and caption data.
-- Using the furigana data from the automation, the captions are enriched to include it
-- Each of those files are uploaded to S3
+2. `ffmpeg` is used to convert the thumbails downloaded by `yt-dlp` from `.webp` to `.jpg`. It can be downloaded on the [FFmpeg site](https://ffmpeg.org)
+
+<hr/><br/>
+
+**Note**: I'm in the middle of changing some of the scripts in `/content-generation` to be used for generic YouTube downloading. It was previously tied to some automation and web scraping of the Comprehensible Japanese website. I did not wish to have that code public, so I'm making a CLI to add single YouTube videos at a time to the project's video storage S3 bucket.
+
+To add videos, run the CLI script using `node content-generation/content-manager`. It presents some options to edit the `manifest` files and videos stored in S3. (Only adding videos is currently implemented)
+
+The general flow of downloading videos is
+
+1. The CLI requests which category the video is part of. If none exist or a new category is needed that is completed in this step. This step creates or modifies existing manifest files in S3
+2. The CLI requests the video title and its YouTube ID
+3. Using `youtube-dl` the video, japanese captions, and thumbnail are downloaded
+4. The caption file is parsed and converted into a JSON file for use by the app. Furigana will be added to the JSON file in this step in the future.
+5. All files are uploaded to S3 and the manifest file of the selected category is updated
 
 Check out the files if you want a complete run-through of how this actually works.
 
@@ -109,6 +122,6 @@ Check out the files if you want a complete run-through of how this actually work
 ## Future improvements
 
 - There should be a way to hide the captions like there is for the furigana. Always having the captions could easily become a crutch.
-- Related to furigana again, integrating a dictionary lookup instead of relying on the Comprehensible Japanese's website would allow me to get furigana for any video with captions.
+- Automatic furigana addition to caption files using a sentence -tokenization and dictionary-lookup step
 - There are some rerendering issues with the captions. It is really only noticible when switching themes on the player screen.
 - Keyboard support. Like tablet support, it's not super useful all the time. I'm more interested in learning how to implement it in the context of a mobile app.

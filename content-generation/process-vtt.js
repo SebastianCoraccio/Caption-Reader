@@ -24,38 +24,9 @@ function isKanjiOrNumber(character) {
   return isKanji(character) || isNumber(character);
 }
 
-function createReadingMap(furigana, noFurigana) {
-  if (!furigana || !noFurigana) {
-    return null;
-  }
-
+function processVtt(vttString) {
+  // TODO add dictionary lookup to generate furigana
   const readingMap = {};
-  let withFuriIndex = 0;
-
-  let currentKanjiWord = '';
-  for (let i = 0; i < noFurigana.length; i++) {
-    if (isKanjiOrNumberOrKatakana(noFurigana[i])) {
-      currentKanjiWord += noFurigana[i];
-    } else if (currentKanjiWord) {
-      let reading = '';
-      while (noFurigana[i] !== furigana[withFuriIndex]) {
-        if (furigana[withFuriIndex] === undefined) {
-          return null;
-        }
-        reading += furigana[withFuriIndex];
-        withFuriIndex += 1;
-      }
-
-      readingMap[currentKanjiWord] = reading;
-      currentKanjiWord = '';
-    }
-    withFuriIndex += 1;
-  }
-  return readingMap;
-}
-
-function processVtt(vttString, furigana, noFurigana) {
-  const readingMap = createReadingMap(furigana, noFurigana);
 
   const parts = vttString
     .split('\n\n')

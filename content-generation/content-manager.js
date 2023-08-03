@@ -1,5 +1,6 @@
 const readline = require('readline');
 const {downloadFromS3, uploadDataToS3} = require('./s3');
+const {processYouTubeVideo} = require('./add-video-to-category');
 
 // I normally don't prefer using globals, but a CLI tool
 // seems like a decent use case
@@ -61,6 +62,18 @@ async function addCategory() {
   });
 }
 
+async function getVideoInfo() {
+  const title = await askQuestion(
+    'What is the video called? Use kebab case i.e. a-day-at-the-park\n',
+  );
+  const youtubeId = await askQuestion(
+    `What is the YouTube ID?
+Ex. https://www.youtube.com/watch?v=Fkk_RTtHHjk - ID is Fkk_RTtHHjk\n`,
+  );
+
+  return {title, youtubeId};
+}
+
 async function setup() {
   try {
     folderManifest = await downloadFromS3({file: '.manifest.json'});
@@ -71,16 +84,23 @@ async function main() {
   await setup();
 
   const ans = await askQuestion(`Which would you like to do?
-  1. Add video
-  2. Remove video
-  3. Remove category
-`);
+    1. Add video
+    2. Remove video
+    3. Remove category
+  `);
 
   switch (ans) {
     case '1': {
       const category = await selectCategory();
+      const {title, youtubeId} = await getVideoInfo();
+      await processYouTubeVideo({
+        directory: category,
+        title,
+        youtubeId,
+      });
       break;
     }
+
     case '2': {
       console.log("This hasn't been implemented yet.\nBye!");
       break;

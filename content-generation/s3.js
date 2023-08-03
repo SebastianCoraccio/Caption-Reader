@@ -9,14 +9,14 @@ const s3 = new AWS.S3({
   secretAccessKey: config.AWS_SECRET_ACCESS_KEY,
 });
 
-function uploadToS3({file}) {
+function uploadToS3({file, key}) {
   return new Promise((resolve, reject) => {
     console.log(`Uploading ${config.S3_BUCKET}/${file}`);
     const fileData = fs.readFileSync(file);
     s3.upload({
       Bucket: config.S3_BUCKET,
       Body: fileData,
-      Key: file,
+      Key: key,
     })
       .promise()
       .then(result => {

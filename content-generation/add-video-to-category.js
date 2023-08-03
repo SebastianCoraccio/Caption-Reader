@@ -1,7 +1,7 @@
 const fs = require('fs');
 const {processVtt} = require('./process-vtt');
 const {exec} = require('child_process');
-const {uploadToS3, downloadFromS3} = require('./s3');
+const {uploadToS3, downloadFromS3, uploadDataToS3} = require('./s3');
 
 function readFileData(fileName) {
   try {
@@ -12,10 +12,10 @@ function readFileData(fileName) {
   }
 }
 
-function downloadYoutubeData(fileMeta, directory) {
+function downloadYoutubeData({youtubeId, title}) {
   return new Promise((resolve, reject) =>
     exec(
-      `youtube-dl ${fileMeta.youtubeId} --write-thumbnail -f 'best[height<=480]' --write-sub --sub-lang ja -o '${directory}/${fileMeta.title}.%(ext)s' --user-agent curl/7.54.0`,
+      `yt-dlp ${youtubeId} --write-thumbnail --convert-thumbnails jpg -f 'best[height<=480]' --write-sub --sub-lang ja -o '${title}.%(ext)s'`,
       (error, stdout, stderr) => {
         if (error) {
           reject(stderr);
@@ -34,60 +34,58 @@ function downloadYoutubeData(fileMeta, directory) {
   );
 }
 
-async function processFiles(directory) {
-  const files = JSON.parse(readFileData(`./${directory}/.files.json`));
-  const manifest = await downloadFromS3({file: `${directory}/.manifest.json`});
-  console.log(manifest);
-  throw new Error();
-  for (const [index, file] of files.entries()) {
-    if (manifest.findIndex(m => m.title === file.title) !== -1) {
-      console.log('Skipping', file.title);
-      continue;
+async function processYouTubeVideo({directory, youtubeId, title}) {
+  let fileManifest = [];
+  try {
+    await downloadFromS3({file: `${directory}/.manifest.json`});
+  } catch (err) {
+    if (err.code !== 'NoSuchKey') {
+      throw err;
     }
-    const prefix = `(${index}/${files.length})`;
-    console.log(`${prefix} Starting download of ${file.title}`);
-    await downloadYoutubeData(file, directory);
-    const vtt = readFileData(`${directory}/${file.title}.ja.vtt`);
-
-    const fileCaptionData = {
-      captions: processVtt(vtt, file.furigana, file.noFurigana),
-    };
-    fs.writeFileSync(
-      `${directory}/${file.title}.json`,
-      JSON.stringify(fileCaptionData, null, 2),
-      'utf8',
-      function (err) {
-        if (err) {
-          return console.log(err);
-        }
-      },
-    );
-    await uploadToS3({
-      file: `${directory}/${file.title}.json`,
-    });
-    await uploadToS3({
-      file: `${directory}/${file.title}.mp4`,
-    });
-    await uploadToS3({
-      file: `${directory}/${file.title}.jpg`,
-    });
-
-    manifest.push({
-      title: file.title,
-      type: 'video',
-    });
-
-    fs.writeFileSync(
-      `${directory}/.manifest.json`,
-      JSON.stringify(manifest, null, 2),
-      'utf8',
-      function (err) {
-        if (err) {
-          return console.log(err);
-        }
-      },
-    );
-    await uploadToS3({file: `${directory}/.manifest.json`});
-    console.log(`${prefix} ${file.title} completed`);
   }
+
+  console.log(`Starting download of ${title}`);
+  await downloadYoutubeData({youtubeId, title});
+  const vtt = readFileData(`${title}.ja.vtt`);
+  const fileCaptionData = {
+    captions: processVtt(vtt),
+  };
+
+  fs.writeFileSync(
+    `${title}.json`,
+    JSON.stringify(fileCaptionData, null, 2),
+    'utf8',
+    function (err) {
+      if (err) {
+        return console.log(err);
+      }
+    },
+  );
+  await uploadToS3({
+    file: `${title}.json`,
+    key: `${directory}/${title}.json`,
+  });
+  await uploadToS3({
+    file: `${title}.mp4`,
+    key: `${directory}/${title}.mp4`,
+  });
+  await uploadToS3({
+    file: `${title}.jpg`,
+    key: `${directory}/${title}.jpg`,
+  });
+
+  fileManifest.push({
+    title: title,
+    type: 'video',
+  });
+
+  // update manifest
+  await uploadDataToS3({
+    key: `${directory}/.manifest.json`,
+    data: fileManifest,
+  });
+
+  //cleanup
 }
+
+module.exports = {processYouTubeVideo};
