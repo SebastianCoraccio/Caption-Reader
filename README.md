@@ -34,14 +34,6 @@ By pressing and holding a caption, the English translation can be shown. Request
   <img alt="A animated image showcasing an inline translation from Japanese to English" src="media/translation.gif?raw=true" height="440"  width="215"/>
 </p>
 
-### Tablet Layout
-
-When running the app on an iPad or an M series Mac, a different layout is used instead of a vertical single screen. All screens you'd navigate through on a phone are shown at once.
-
-<p align="center">
-  <img alt="A three column horizontal tablet layout. It displays a home screen with recent videos, a video list, and the video player with captions underneath" src="media/tablet_layout.jpeg?raw=true" height="512"  width="683"/>
-</p>
-
 ### Theming
 
 Having a dark and light mode is a quality of life feature I appreciate in apps. At first I experimented with React Navigation's built-in theme support but didn't see a way to support animating between colors. I kept their method of defining themes as a grouping of background, card, text, and border colors. I moved animated values for those colors into a React Context so that any component in the app can access the correct colors.
