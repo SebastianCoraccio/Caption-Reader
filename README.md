@@ -3,7 +3,7 @@
 This React Native project features a video player and an auto scrolling caption viewer that also display their English translations. This project was created to advance both my learning Japanese and my technical knowledge. This README serves to introduce and showcase the apps' functionality. This work is private and is not something I plan to release or develop for anyone else to contribute to or utilize.
 
 <p align="center">
-  <img alt="An animated image showing the video player and list of video captions beneath" src="media/title.png?raw=true" height="440"  width="215"/>
+  <img alt="An animated image showing the video player and list of video captions beneath" src="media/cover_photo.png?raw=true"/>
 </p>
 <hr/>
 

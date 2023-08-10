@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+    <style>
+      body {
+        padding: 2px;
+        background: rgba(0, 0, 0, 0);
+      }
+      .tablet {
+        width: fit-content;
+        border-style: solid;
+        border-radius: 18px;
+        border-width: 3px;
+        border-color: rgb(100, 100, 100);
+        background-color: rgb(100, 100, 100);
+      }
+      .tablet_bezel {
+        display: 'flex';
+        border-style: solid;
+        border-radius: 16px;
+        border-width: 16px;
+        border-color: black;
+        background-color: black;
+      }
+      .phone {
+        position: absolute;
+        top: 130px;
+        left: 630px;
+        width: fit-content;
+        border-style: solid;
+        border-radius: 24px;
+        border-width: 3px;
+        border-color: rgb(100, 100, 100);
+        background-color: rgb(100, 100, 100);
+      }
+      .phone_bezel {
+        display: 'flex';
+        border-style: solid;
+        border-radius: 20px;
+        border-width: 8px;
+        border-color: black;
+        background-color: black;
+      }
+      .tablet_img {
+        height: 512px;
+        width: 683px;
+        border-radius: 8px;
+        margin-bottom: -3px;
+      }
+      .phone_img {
+        height: 440px;
+        width: 215px;
+        border-radius: 12px;
+        margin-bottom: -3px;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="tablet">
+      <div class="tablet_bezel">
+        <img src="./tablet_layout.jpeg" class="tablet_img" />
+      </div>
+    </div>
+    <div class="phone">
+      <div class="phone_bezel">
+        <img src="./title.png" class="phone_img" />
+      </div>
+    </div>
+  </body>
+</html>
