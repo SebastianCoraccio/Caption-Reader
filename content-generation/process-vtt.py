@@ -4,6 +4,8 @@ import json
 
 HIRAGANA_UNICODE_TABLE_WIDTH = 96
 
+readingLookupTable = {}
+
 tagger = MeCab.Tagger()
 
 def isKanji(character):
@@ -16,11 +18,62 @@ def textIncludesKanji(text):
            return True
     return False
 
+def textOnlyIncludesKanji(text): 
+    for char in text: 
+        if(not isKanji(char)):
+           return False
+    return True
+
+
 def convertKatakanaToHiragana(katakana):
     acc = ""
     for character in katakana:
         acc += chr(ord(character) - HIRAGANA_UNICODE_TABLE_WIDTH)
     return acc
+
+def findFirstHiragana(text):
+    index = 0
+    for character in text:
+        
+        index += 1
+        return 
+    return "", -1
+
+def getReading(kanjiString, hiraganaString):
+
+    # ambiguous readings are verified by script user and stored for repeats
+    if(readingLookupTable.get(kanjiString)):
+        return readingLookupTable.get(kanjiString)
+
+    # remove any matching characters at the start of the strings
+    if(not isKanji(kanjiString[0])):
+        while(kanjiString[0] == hiraganaString[0] or convertKatakanaToHiragana(kanjiString[0]) == hiraganaString[0]):
+            kanjiString = kanjiString[1:]
+            hiraganaString = hiraganaString[1:]
+    
+    # remove any matching characters at the end of the strings
+    if(not isKanji(kanjiString[-1])):
+        while(kanjiString[-1] == hiraganaString[-1] or convertKatakanaToHiragana(kanjiString[-1]) == hiraganaString[-1]):
+            kanjiString = kanjiString[0:-1]
+            hiraganaString = hiraganaString[0:-1]
+
+    # no ambiguity possible, can confidently return full hiragana
+    if(textOnlyIncludesKanji(kanjiString)):
+        return [[kanjiString, hiraganaString]]
+
+
+    # split on kanji
+
+    # starts and ends with kanji
+
+    # No match found
+    # TODO Request reading from user
+    print('no match for [', kanjiString, '],[', hiraganaString, ']')
+
+    # Determine a suggestion by removing trailing verb or adjective endings
+
+
+    return ""
 
 # Breaks a full caption line into tokens
 # tokens have a text component and a reading component
@@ -39,7 +92,8 @@ def normalizeCaption(caption):
         originalText, _pronunciation, reading, *_rest = tokenInfo
         if(textIncludesKanji(originalText)):
             # TODO Get kanji reading from token reading
-            print(originalText, reading, convertKatakanaToHiragana(reading))
+            hiraganaReading = convertKatakanaToHiragana(reading)
+            reading = getReading(originalText, hiraganaReading)
             
 
 def readChunk(chunk):
@@ -77,4 +131,22 @@ def main():
         readChunk(chunk)
 
 main()
-    
+
+def getReadingTests():
+
+    assert getReading('魚','さかな') == [['魚','さかな']], 'Single kanji words'
+    assert getReading('今日','きょう') == [['今日','きょう']], 'Multi-kanji words'
+    assert getReading('かき氷','かきごおり') == [['氷','ごおり']], 'Leading hiragana'
+    assert getReading('暑い','あつい') == [['暑','あつ']], 'Trailing hiragana'
+    assert getReading('夏バテ','なつばて') == [['夏','なつ']], 'Trailing katakana'
+    assert getReading('食べ物','たべもの') == [['食','た'],['物','もの']], 'Multiple readings'
+
+    readingLookupTable['話し'] = [['話', 'reading is はな']]
+    assert getReading('話し','はなす') == [['話','reading is はな']], 'Required user input due to no match characters'
+
+    readingLookupTable['食べ'] = [['食', 'reading is た']]
+    assert getReading('食べ','たべる') == [['食','reading is た']], 'Required user input due to ambiguity'
+
+
+
+getReadingTests()
