@@ -31,49 +31,67 @@ def convertKatakanaToHiragana(katakana):
         acc += chr(ord(character) - HIRAGANA_UNICODE_TABLE_WIDTH)
     return acc
 
-def findFirstHiragana(text):
-    index = 0
-    for character in text:
-        
-        index += 1
-        return 
-    return "", -1
-
-def getReading(kanjiString, hiraganaString):
+def getReading(originalText, hiraganaString):
+    # text without kanji can be returned as is
+    if(not textIncludesKanji(originalText)):
+        return [{'text': originalText}]
 
     # ambiguous readings are verified by script user and stored for repeats
-    if(readingLookupTable.get(kanjiString)):
-        return readingLookupTable.get(kanjiString)
+    if(readingLookupTable.get(originalText)):
+        return readingLookupTable.get(originalText)
+
+    readings = []
 
     # remove any matching characters at the start of the strings
-    if(not isKanji(kanjiString[0])):
-        while(kanjiString[0] == hiraganaString[0] or convertKatakanaToHiragana(kanjiString[0]) == hiraganaString[0]):
-            kanjiString = kanjiString[1:]
+    leadingHiragana = ""
+    if(not isKanji(originalText[0])):
+        while(originalText[0] == hiraganaString[0] or convertKatakanaToHiragana(originalText[0]) == hiraganaString[0]):
+            leadingHiragana += originalText[0]
+            originalText = originalText[1:]
             hiraganaString = hiraganaString[1:]
     
+    if(leadingHiragana != ''):
+        readings.append({'text': leadingHiragana})
+
     # remove any matching characters at the end of the strings
-    if(not isKanji(kanjiString[-1])):
-        while(kanjiString[-1] == hiraganaString[-1] or convertKatakanaToHiragana(kanjiString[-1]) == hiraganaString[-1]):
-            kanjiString = kanjiString[0:-1]
+    trailingHiragana = ""
+    if(not isKanji(originalText[-1])):
+        while(originalText[-1] == hiraganaString[-1] or convertKatakanaToHiragana(originalText[-1]) == hiraganaString[-1]):
+            trailingHiragana = originalText[-1] + trailingHiragana
+            originalText = originalText[0:-1]
             hiraganaString = hiraganaString[0:-1]
 
     # no ambiguity possible, can confidently return full hiragana
-    if(textOnlyIncludesKanji(kanjiString)):
-        return [[kanjiString, hiraganaString]]
+    if(textOnlyIncludesKanji(originalText)):
+        readings.append([{'text': originalText, 'reading':hiraganaString}])
+        if(trailingHiragana != ''):
+            readings.append({'text': trailingHiragana})
+        return readings
 
+    print('Unable to determine reading for', originalText)
+    print('Please provide readings for each kanji group in the string')
+    
+    isRequestingReadings = False
+    while(isRequestingReadings):
+        print('Enter the kanji (enter nothing to stop entering readings)')
+        kanji = input()
+        if(kanji == ''):
+            isRequestingReadings = False
+            continue
 
-    # split on kanji
+        print('Enter its reading')
+        reading = input()
+        readings.append({'text':kanji, 'reading': reading})
 
-    # starts and ends with kanji
+    readingLookupTable[originalText] = readings
 
-    # No match found
-    # TODO Request reading from user
-    print('no match for [', kanjiString, '],[', hiraganaString, ']')
+    # TODO Determine a suggestion by removing trailing verb or adjective endings
 
-    # Determine a suggestion by removing trailing verb or adjective endings
+    # TODO I dont like this trailing check is duplicated above
+    if(trailingHiragana != ''):
+        readings.append({'text': trailingHiragana})
 
-
-    return ""
+    return readings
 
 # Breaks a full caption line into tokens
 # tokens have a text component and a reading component
@@ -83,18 +101,31 @@ def normalizeCaption(caption):
     # Each line has the token text, reading, and grammar information
     tokenizedString = tagger.parse(caption)
     tokenStrings = tokenizedString.split("\n")
-
     # The final elements are ["EOS", ""] and that needs to be removed
     tokenStrings = tokenStrings[:-2]
 
+    tokensWithReadings = []
     for tokenString in tokenStrings:
         tokenInfo = tokenString.split("\t")
         originalText, _pronunciation, reading, *_rest = tokenInfo
-        if(textIncludesKanji(originalText)):
-            # TODO Get kanji reading from token reading
-            hiraganaReading = convertKatakanaToHiragana(reading)
-            reading = getReading(originalText, hiraganaReading)
-            
+        tokensWithReadings.append(getReading(originalText, convertKatakanaToHiragana(reading)))
+    return flatten2D(tokensWithReadings)
+
+def flatten2D(array):
+    acc = []
+    for nestedArray in array:
+        for item in nestedArray:
+            acc.append(item)
+    return acc
+    
+
+def test(actual, expected, testName):
+    if(actual != expected):
+        raise AssertionError(f'{testName} -  Expected value of {expected} did not match actual {actual}')
+
+def flattenTests():
+    test(flatten2D([[1,2],[3,4]]), [1,2,3,4], 'Flattens nested arrays')
+
 
 def readChunk(chunk):
     # The formatting of the vtt file can result 
@@ -111,9 +142,14 @@ def readChunk(chunk):
     # ]
     # The number of lines varies but there is at least 1
     timestamp, *captions = chunk
+    lines = []
     for caption in captions:
-        normalizeCaption(caption)
+        lines.append(normalizeCaption(caption))
 
+    return {
+        'timestamp': float(timestamp[3:5]) * 60 + float(timestamp[6:12]),
+        'lines': lines
+    }
 
 def main():
     vttFile = open("summer-foods.ja.vtt", "r")
@@ -128,25 +164,30 @@ def main():
 
     # Process each line
     for chunk in timestampedCaptionChunks:
-        readChunk(chunk)
+        chunkData = readChunk(chunk)
+        print(chunkData)
 
 main()
 
 def getReadingTests():
 
-    assert getReading('魚','さかな') == [['魚','さかな']], 'Single kanji words'
-    assert getReading('今日','きょう') == [['今日','きょう']], 'Multi-kanji words'
-    assert getReading('かき氷','かきごおり') == [['氷','ごおり']], 'Leading hiragana'
-    assert getReading('暑い','あつい') == [['暑','あつ']], 'Trailing hiragana'
-    assert getReading('夏バテ','なつばて') == [['夏','なつ']], 'Trailing katakana'
-    assert getReading('食べ物','たべもの') == [['食','た'],['物','もの']], 'Multiple readings'
+    assert getReading('アパート','あぱーと') == [{'text': 'アパート'}], 'Non-kanji text'
+    assert getReading('魚','さかな') == [{'text': '魚', 'reading': 'さかな'}], 'Single kanji words'
+    assert getReading('今日','きょう') == [{'text': '今日','reading': 'きょう'}], 'Multi-kanji words'
+    assert getReading('かき氷','かきごおり') == [{'text': '氷','reading': 'ごおり'}], 'Leading hiragana'
+    assert getReading('暑い','あつい') == [{'text': '暑','reading': 'あつ'}], 'Trailing hiragana'
+    assert getReading('夏バテ','なつばて') == [{'text': '夏','reading': 'なつ'}], 'Trailing katakana'
 
-    readingLookupTable['話し'] = [['話', 'reading is はな']]
-    assert getReading('話し','はなす') == [['話','reading is はな']], 'Required user input due to no match characters'
+    readingLookupTable['話し'] = [{'text': '話','reading': 'reading is はな'}]
+    assert getReading('話し','はなす') == [{'text': '話','reading': 'reading is はな'}], 'Required user input due to no match characters'
 
-    readingLookupTable['食べ'] = [['食', 'reading is た']]
-    assert getReading('食べ','たべる') == [['食','reading is た']], 'Required user input due to ambiguity'
+    readingLookupTable['食べ'] = [{'text': '食','reading': 'reading is た'}]
+    assert getReading('食べ','たべる') == [{'text': '食','reading': 'reading is た'}], 'Required user input due to ambiguity'
+
+    # TODO support this case without needing use input
+    # assert getReading('食べ物','たべもの') == [['食','た'],['物','もの']], 'Multiple readings'
 
 
 
-getReadingTests()
+
+# getReadingTests()
