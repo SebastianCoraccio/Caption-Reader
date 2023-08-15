@@ -1,37 +1,37 @@
-const fs = require('fs');
-const {processVtt} = require('./process-vtt');
 const {exec} = require('child_process');
+const {spawn} = require('child_process');
 const {uploadToS3, downloadFromS3, uploadDataToS3} = require('./s3');
 
-function readFileData(fileName) {
-  try {
-    const data = fs.readFileSync(fileName, 'base64');
-    return Buffer.from(data, 'base64').toString('utf-8');
-  } catch {
-    return '[]';
-  }
+function execCommand(command, args) {
+  const child = spawn(command, args, {stdio: 'inherit', stdin: 'inherit'});
+  return new Promise(resolve => {
+    child.on('close', resolve);
+  });
 }
 
 function downloadYoutubeData({youtubeId, title}) {
-  return new Promise((resolve, reject) =>
-    exec(
-      `yt-dlp ${youtubeId} --write-thumbnail --convert-thumbnails jpg -f 'best[height<=480]' --write-sub --sub-lang ja -o '${title}.%(ext)s'`,
-      (error, stdout, stderr) => {
-        if (error) {
-          reject(stderr);
-          console.log(`error: ${error.message}`);
-          return;
-        }
-        if (stderr) {
-          reject(stderr);
-          console.log(`stderr: ${stderr}`);
-          return;
-        }
-        console.log(`stdout: ${stdout}`);
-        resolve(stdout);
-      },
-    ),
-  );
+  return execCommand('yt-dlp', [
+    '--write-thumbnail',
+    '--convert-thumbnails',
+    'jpg',
+    '-f',
+    "'best[height<=480]'",
+    '--write-sub',
+    '--sub-lang',
+    'ja',
+    '-o',
+    `'${title}.%(ext)s'`,
+    youtubeId,
+  ]);
+}
+
+function processVttFile(videoId) {
+  return execCommand('arch', [
+    '-x86_64',
+    'python3',
+    'content-generation/process-vtt.py',
+    videoId,
+  ]);
 }
 
 async function processYouTubeVideo({directory, youtubeId, title}) {
@@ -46,15 +46,14 @@ async function processYouTubeVideo({directory, youtubeId, title}) {
 
   console.log(`Starting download of ${title}`);
   await downloadYoutubeData({youtubeId, title});
-  const vtt = readFileData(`${title}.ja.vtt`);
-  const fileCaptionData = {
-    captions: processVtt(vtt),
-  };
 
-  await uploadDataToS3({
-    file: fileCaptionData,
+  console.log('Processing vtt...');
+  await processVttFile(title);
+  console.log('Processing vtt complete.');
+  await uploadToS3({
     key: `${directory}/${title}.json`,
   });
+
   await uploadToS3({
     file: `${title}.mp4`,
     key: `${directory}/${title}.mp4`,

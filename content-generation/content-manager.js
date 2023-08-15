@@ -103,8 +103,11 @@ async function main() {
 
   switch (ans) {
     case 1: {
-      const category = await selectCategory();
-      const {title, youtubeId} = await getVideoInfo();
+      // const category = await selectCategory();
+      // const {title, youtubeId} = await getVideoInfo();
+      const category = 'complete-beginner/';
+      const title = 'summer-foods';
+      const youtubeId = 'e4nXKlJ85DQ';
       await processYouTubeVideo({
         directory: category,
         title,

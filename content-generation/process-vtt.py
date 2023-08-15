@@ -1,16 +1,18 @@
+import sys
 import re
 import MeCab
 import json
 
+print(sys.argv)
+
 HIRAGANA_UNICODE_TABLE_WIDTH = 96
-
 readingLookupTable = {}
-
 tagger = MeCab.Tagger()
+
+# --- Helpers -------------------------------------------------------
 
 def isKanji(character):
   return re.match("[\u4e00-\u9faf]|[\u3400-\u4dbf]|々", character)
-
 
 def textIncludesKanji(text):
     for char in text: 
@@ -24,12 +26,13 @@ def textOnlyIncludesKanji(text):
            return False
     return True
 
-
 def convertKatakanaToHiragana(katakana):
     acc = ""
     for character in katakana:
         acc += chr(ord(character) - HIRAGANA_UNICODE_TABLE_WIDTH)
     return acc
+
+# -------------------------------------------------------------------
 
 def getReading(originalText, hiraganaString):
     # text without kanji can be returned as is
@@ -63,15 +66,15 @@ def getReading(originalText, hiraganaString):
 
     # no ambiguity possible, can confidently return full hiragana
     if(textOnlyIncludesKanji(originalText)):
-        readings.append([{'text': originalText, 'reading':hiraganaString}])
+        readings.append({'text': originalText, 'reading':hiraganaString})
         if(trailingHiragana != ''):
             readings.append({'text': trailingHiragana})
         return readings
 
-    print('Unable to determine reading for', originalText)
+    print(f'Unable to determine reading for {originalText}')
     print('Please provide readings for each kanji group in the string')
     
-    isRequestingReadings = False
+    isRequestingReadings = True
     while(isRequestingReadings):
         print('Enter the kanji (enter nothing to stop entering readings)')
         kanji = input()
@@ -108,23 +111,8 @@ def normalizeCaption(caption):
     for tokenString in tokenStrings:
         tokenInfo = tokenString.split("\t")
         originalText, _pronunciation, reading, *_rest = tokenInfo
-        tokensWithReadings.append(getReading(originalText, convertKatakanaToHiragana(reading)))
-    return flatten2D(tokensWithReadings)
-
-def flatten2D(array):
-    acc = []
-    for nestedArray in array:
-        for item in nestedArray:
-            acc.append(item)
-    return acc
-    
-
-def test(actual, expected, testName):
-    if(actual != expected):
-        raise AssertionError(f'{testName} -  Expected value of {expected} did not match actual {actual}')
-
-def flattenTests():
-    test(flatten2D([[1,2],[3,4]]), [1,2,3,4], 'Flattens nested arrays')
+        tokensWithReadings += getReading(originalText, convertKatakanaToHiragana(reading))
+    return tokensWithReadings
 
 
 def readChunk(chunk):
@@ -132,7 +120,6 @@ def readChunk(chunk):
     # in empty chunks, which must be filtered
     if(len(chunk) < 2): 
         return
-
 
     # Example chunk formatting:
     # [
@@ -151,8 +138,8 @@ def readChunk(chunk):
         'lines': lines
     }
 
-def main():
-    vttFile = open("summer-foods.ja.vtt", "r")
+def main(videoId):
+    vttFile = open(f'{videoId}.ja.vtt', 'r')
     vtt = vttFile.read()
 
     lines = vtt.split("\n\n")
@@ -163,31 +150,15 @@ def main():
     timestampedCaptionChunks = list(map(lambda line: line.split("\n"), lines))
 
     # Process each line
+    fileData = {'captions': []}
     for chunk in timestampedCaptionChunks:
-        chunkData = readChunk(chunk)
-        print(chunkData)
+        fileData['captions'].append(readChunk(chunk))
 
-main()
-
-def getReadingTests():
-
-    assert getReading('アパート','あぱーと') == [{'text': 'アパート'}], 'Non-kanji text'
-    assert getReading('魚','さかな') == [{'text': '魚', 'reading': 'さかな'}], 'Single kanji words'
-    assert getReading('今日','きょう') == [{'text': '今日','reading': 'きょう'}], 'Multi-kanji words'
-    assert getReading('かき氷','かきごおり') == [{'text': '氷','reading': 'ごおり'}], 'Leading hiragana'
-    assert getReading('暑い','あつい') == [{'text': '暑','reading': 'あつ'}], 'Trailing hiragana'
-    assert getReading('夏バテ','なつばて') == [{'text': '夏','reading': 'なつ'}], 'Trailing katakana'
-
-    readingLookupTable['話し'] = [{'text': '話','reading': 'reading is はな'}]
-    assert getReading('話し','はなす') == [{'text': '話','reading': 'reading is はな'}], 'Required user input due to no match characters'
-
-    readingLookupTable['食べ'] = [{'text': '食','reading': 'reading is た'}]
-    assert getReading('食べ','たべる') == [{'text': '食','reading': 'reading is た'}], 'Required user input due to ambiguity'
-
-    # TODO support this case without needing use input
-    # assert getReading('食べ物','たべもの') == [['食','た'],['物','もの']], 'Multiple readings'
+    jsonFile = open(f'{videoId}.json', 'w')
+    jsonFile.write(json.dumps(fileData, ensure_ascii=False, indent=2))
+    jsonFile.close()
 
 
-
-
-# getReadingTests()
+videoId = sys.argv[1]
+print(f'Processing vtt file of {videoId}')
+main(videoId)
