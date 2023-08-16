@@ -49,5 +49,9 @@ def getReadingTests():
         'Required user input due to ambiguity'
     )
 
-    # TODO support this case without needing use input
-    # test(getReading('食べ物','たべもの'),[['食','た'],['物','もの']], 'Multiple readings')
+    # TODO investigate mocking input()
+    test(
+        getReading('食べ物','たべもの'),
+        [{'text':'食','reading': 'た'},{'text': 'べ'},{'text':'物','reading':'もの'}],
+        'Multiple readings'
+    )

@@ -34,10 +34,37 @@ def convertKatakanaToHiragana(katakana):
 
 # -------------------------------------------------------------------
 
-def getReading(originalText, hiraganaString):
+# Assumes kanjiText begins with kanji
+def requestReadings(kanjiText, hiraganaString):
+    readings = []
+    while(kanjiText != ""):
+        # separate chunk of kanji from string
+        kanji = ""
+        while(kanjiText != "" and isKanji(kanjiText[0])):
+            kanji += kanjiText[0]
+            kanjiText = kanjiText[1:]
+
+        # request reading for kanji chunk
+        print(f'Enter reading for {kanji} ({hiraganaString})')
+        reading = input()
+        readings.append({'text':kanji, 'reading': reading})
+
+        nonKanji = ""
+        while(kanjiText != "" and not isKanji(kanjiText[0])):
+            nonKanji += kanjiText[0]
+            kanjiText = kanjiText[1:]
+
+        if(nonKanji != ""):
+            readings.append({'text':nonKanji,})
+
+    return readings
+        
+
+def getReading(kanjiText, hiraganaString):
+    originalText = kanjiText
     # text without kanji can be returned as is
-    if(not textIncludesKanji(originalText)):
-        return [{'text': originalText}]
+    if(not textIncludesKanji(kanjiText)):
+        return [{'text': kanjiText}]
 
     # ambiguous readings are verified by script user and stored for repeats
     if(readingLookupTable.get(originalText)):
@@ -47,10 +74,10 @@ def getReading(originalText, hiraganaString):
 
     # remove any matching characters at the start of the strings
     leadingHiragana = ""
-    if(not isKanji(originalText[0])):
-        while(originalText[0] == hiraganaString[0] or convertKatakanaToHiragana(originalText[0]) == hiraganaString[0]):
-            leadingHiragana += originalText[0]
-            originalText = originalText[1:]
+    if(not isKanji(kanjiText[0])):
+        while(kanjiText[0] == hiraganaString[0] or convertKatakanaToHiragana(kanjiText[0]) == hiraganaString[0]):
+            leadingHiragana += kanjiText[0]
+            kanjiText = kanjiText[1:]
             hiraganaString = hiraganaString[1:]
     
     if(leadingHiragana != ''):
@@ -58,42 +85,28 @@ def getReading(originalText, hiraganaString):
 
     # remove any matching characters at the end of the strings
     trailingHiragana = ""
-    if(not isKanji(originalText[-1])):
-        while(originalText[-1] == hiraganaString[-1] or convertKatakanaToHiragana(originalText[-1]) == hiraganaString[-1]):
-            trailingHiragana = originalText[-1] + trailingHiragana
-            originalText = originalText[0:-1]
+    if(not isKanji(kanjiText[-1])):
+        while(kanjiText[-1] == hiraganaString[-1] or convertKatakanaToHiragana(kanjiText[-1]) == hiraganaString[-1]):
+            trailingHiragana = kanjiText[-1] + trailingHiragana
+            kanjiText = kanjiText[0:-1]
             hiraganaString = hiraganaString[0:-1]
 
     # no ambiguity possible, can confidently return full hiragana
-    if(textOnlyIncludesKanji(originalText)):
-        readings.append({'text': originalText, 'reading':hiraganaString})
+    if(textOnlyIncludesKanji(kanjiText)):
+        readings.append({'text': kanjiText, 'reading':hiraganaString})
         if(trailingHiragana != ''):
             readings.append({'text': trailingHiragana})
         return readings
 
-    print(f'Unable to determine reading for {originalText}({hiraganaString})')
-    print('Please provide readings for each kanji group in the string')
+    print(f'Unable to determine reading for {kanjiText}({hiraganaString})')
+
+    readings += requestReadings(kanjiText, hiraganaString)
     
-    # TODO internal hiragana is lost 
-    isRequestingReadings = True
-    while(isRequestingReadings):
-        print('Enter the kanji (enter nothing to stop entering readings)')
-        kanji = input()
-        if(kanji == ''):
-            isRequestingReadings = False
-            continue
-
-        print('Enter its reading')
-        reading = input()
-        readings.append({'text':kanji, 'reading': reading})
-
-    readingLookupTable[originalText] = readings
-
-    # TODO Determine a suggestion by removing trailing verb or adjective endings
-
     # TODO I dont like this trailing check is duplicated above
     if(trailingHiragana != ''):
         readings.append({'text': trailingHiragana})
+
+    readingLookupTable[originalText] = readings
 
     return readings
 
