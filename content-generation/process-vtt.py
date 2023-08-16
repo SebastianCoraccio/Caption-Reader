@@ -71,9 +71,10 @@ def getReading(originalText, hiraganaString):
             readings.append({'text': trailingHiragana})
         return readings
 
-    print(f'Unable to determine reading for {originalText}')
+    print(f'Unable to determine reading for {originalText}({hiraganaString})')
     print('Please provide readings for each kanji group in the string')
     
+    # TODO internal hiragana is lost 
     isRequestingReadings = True
     while(isRequestingReadings):
         print('Enter the kanji (enter nothing to stop entering readings)')
@@ -146,6 +147,8 @@ def main(videoId):
 
     # The first line is header info about the vtt file format 
     lines.pop(0)
+    # The last line is blank
+    lines = lines[:-1]
 
     timestampedCaptionChunks = list(map(lambda line: line.split("\n"), lines))
 

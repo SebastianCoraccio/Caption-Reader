@@ -11,7 +11,7 @@ const s3 = new AWS.S3({
 
 function uploadToS3({file, key}) {
   return new Promise((resolve, reject) => {
-    console.log(`Uploading ${config.S3_BUCKET}/${file}`);
+    console.log(`Uploading ${config.S3_BUCKET}/${key}`);
     const fileData = fs.readFileSync(file);
     s3.upload({
       Bucket: config.S3_BUCKET,

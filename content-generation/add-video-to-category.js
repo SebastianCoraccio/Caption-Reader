@@ -1,9 +1,12 @@
-const {exec} = require('child_process');
 const {spawn} = require('child_process');
 const {uploadToS3, downloadFromS3, uploadDataToS3} = require('./s3');
 
 function execCommand(command, args) {
-  const child = spawn(command, args, {stdio: 'inherit', stdin: 'inherit'});
+  const child = spawn(command, args, {
+    stdio: 'inherit',
+    stdin: 'inherit',
+    shell: true,
+  });
   return new Promise(resolve => {
     child.on('close', resolve);
   });
@@ -12,15 +15,11 @@ function execCommand(command, args) {
 function downloadYoutubeData({youtubeId, title}) {
   return execCommand('yt-dlp', [
     '--write-thumbnail',
-    '--convert-thumbnails',
-    'jpg',
-    '-f',
-    "'best[height<=480]'",
+    '--convert-thumbnails jpg',
+    "-f 'best[height<=480]'",
     '--write-sub',
-    '--sub-lang',
-    'ja',
-    '-o',
-    `'${title}.%(ext)s'`,
+    '--sub-lang ja',
+    `-o '${title}.%(ext)s'`,
     youtubeId,
   ]);
 }
@@ -37,11 +36,17 @@ function processVttFile(videoId) {
 async function processYouTubeVideo({directory, youtubeId, title}) {
   let fileManifest = [];
   try {
-    await downloadFromS3({file: `${directory}/.manifest.json`});
+    fileManifest = await downloadFromS3({file: `${directory}/.manifest.json`});
   } catch (err) {
     if (err.code !== 'NoSuchKey') {
       throw err;
     }
+  }
+
+  if (fileManifest.find(f => f.title === title)) {
+    console.log(
+      `${title} already exists. Only continue if you wish to update it`,
+    );
   }
 
   console.log(`Starting download of ${title}`);
@@ -50,17 +55,19 @@ async function processYouTubeVideo({directory, youtubeId, title}) {
   console.log('Processing vtt...');
   await processVttFile(title);
   console.log('Processing vtt complete.');
+
   await uploadToS3({
-    key: `${directory}/${title}.json`,
+    file: `${title}.json`,
+    key: `${directory}${title}.json`,
   });
 
   await uploadToS3({
     file: `${title}.mp4`,
-    key: `${directory}/${title}.mp4`,
+    key: `${directory}${title}.mp4`,
   });
   await uploadToS3({
     file: `${title}.jpg`,
-    key: `${directory}/${title}.jpg`,
+    key: `${directory}${title}.jpg`,
   });
 
   fileManifest.push({
@@ -69,7 +76,7 @@ async function processYouTubeVideo({directory, youtubeId, title}) {
   });
 
   await uploadDataToS3({
-    key: `${directory}/.manifest.json`,
+    key: `${directory}.manifest.json`,
     data: fileManifest,
   });
 

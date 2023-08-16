@@ -39,9 +39,9 @@ async function selectCategory() {
 
   console.log('The current categories are:');
   folderManifest.forEach((category, index) =>
-    console.log(`${index + 1}. ${category.title}`),
+    console.log(`  ${index + 1}. ${category.title}`),
   );
-  console.log(`${folderManifest.length + 1}. Add new category`);
+  console.log(`  ${folderManifest.length + 1}. Add new category`);
 
   const category = await requestNumberedOption(
     'Which category would you like to add to?\n',
@@ -93,9 +93,9 @@ async function main() {
 
   const ans = await requestNumberedOption(
     `Which would you like to do?
-1. Add video
-2. Remove video
-3. Remove category
+  1. Add video
+  2. Remove video
+  3. Remove category
 `,
     1,
     3,
@@ -103,11 +103,8 @@ async function main() {
 
   switch (ans) {
     case 1: {
-      // const category = await selectCategory();
-      // const {title, youtubeId} = await getVideoInfo();
-      const category = 'complete-beginner/';
-      const title = 'summer-foods';
-      const youtubeId = 'e4nXKlJ85DQ';
+      const category = await selectCategory();
+      const {title, youtubeId} = await getVideoInfo();
       await processYouTubeVideo({
         directory: category,
         title,
