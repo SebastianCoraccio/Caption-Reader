@@ -103,7 +103,7 @@ The general flow of downloading videos is
 1. The CLI requests which category the video is part of. If none exist or a new category is needed that is completed in this step. This step creates or modifies existing manifest files in S3
 2. The CLI requests the video title and its YouTube ID
 3. Using `youtube-dl` the video, japanese captions, and thumbnail are downloaded
-4. The caption file is parsed and converted into a JSON file for use by the app. Furigana will be added to the JSON file in this step in the future.
+4. The caption file is parsed and converted into a JSON file for use by the app. During this step furigana is automatically added to the captions. User input may be required to confirm ambiguous kanji readings
 5. All files are uploaded to S3 and the manifest file of the selected category is updated
 
 Check out the files if you want a complete run-through of how this actually works.
@@ -114,6 +114,5 @@ Check out the files if you want a complete run-through of how this actually work
 ## Future improvements
 
 - There should be a way to hide the captions like there is for the furigana. Always having the captions could easily become a crutch.
-- Automatic furigana addition to caption files using a sentence -tokenization and dictionary-lookup step
 - There are some rerendering issues with the captions. It is really only noticible when switching themes on the player screen.
 - Keyboard support. Like tablet support, it's not super useful all the time. I'm more interested in learning how to implement it in the context of a mobile app.
