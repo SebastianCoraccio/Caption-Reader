@@ -14,6 +14,11 @@ tagger = MeCab.Tagger()
 def isKanji(character):
   return re.match("[\u4e00-\u9faf]|[\u3400-\u4dbf]|々", character)
 
+def isKatakana(character):
+    return re.match(
+      "[\u30A1-\u30FA\u30FD-\u30FF\u31F0-\u31FF\u32D0-\u32FE\u3300-\u3357\uFF66-\uFF6F\uFF71-\uFF9D]", character
+    )   
+
 def textIncludesKanji(text):
     for char in text: 
         if(isKanji(char)):
@@ -28,8 +33,12 @@ def textOnlyIncludesKanji(text):
 
 def convertKatakanaToHiragana(katakana):
     acc = ""
+    print(katakana)
     for character in katakana:
-        acc += chr(ord(character) - HIRAGANA_UNICODE_TABLE_WIDTH)
+        if(not isKatakana(character)):
+            acc += character
+        else:
+            acc += chr(ord(character) - HIRAGANA_UNICODE_TABLE_WIDTH)
     return acc
 
 # -------------------------------------------------------------------
@@ -90,7 +99,7 @@ def getReading(kanjiText, hiraganaString):
             trailingHiragana = kanjiText[-1] + trailingHiragana
             kanjiText = kanjiText[0:-1]
             hiraganaString = hiraganaString[0:-1]
-
+ 
     # no ambiguity possible, can confidently return full hiragana
     if(textOnlyIncludesKanji(kanjiText)):
         readings.append({'text': kanjiText, 'reading':hiraganaString})
