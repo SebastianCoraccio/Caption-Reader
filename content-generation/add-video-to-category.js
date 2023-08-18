@@ -43,12 +43,6 @@ async function processYouTubeVideo({directory, youtubeId, title}) {
     }
   }
 
-  if (fileManifest.find(f => f.title === title)) {
-    console.log(
-      `${title} already exists. Only continue if you wish to update it`,
-    );
-  }
-
   console.log(`Starting download of ${title}`);
   await downloadYoutubeData({youtubeId, title});
 
@@ -70,17 +64,19 @@ async function processYouTubeVideo({directory, youtubeId, title}) {
     key: `${directory}${title}.jpg`,
   });
 
+  if (fileManifest.find(f => f.title === title)) {
+    console.log(`${title} already exists, manifest will not be updated`);
+    return;
+  }
+
   fileManifest.push({
     title: title,
     type: 'video',
   });
-
   await uploadDataToS3({
     key: `${directory}.manifest.json`,
     data: fileManifest,
   });
-
-  //cleanup
 }
 
 module.exports = {processYouTubeVideo};
