@@ -94,9 +94,9 @@ The video file, caption data, and thumbnail are all stored in this directory wit
 
 <hr/><br/>
 
-**Note**: I'm in the middle of changing some of the scripts in `/content-generation` to be used for generic YouTube downloading. It was previously tied to some automation and web scraping of the Comprehensible Japanese website. I did not wish to have that code public, so I'm making a CLI to add single YouTube videos at a time to the project's video storage S3 bucket.
+**Note**: I'm in the middle of changing some of the scripts in `/content` to be used for generic YouTube downloading. It was previously tied to some automation and web scraping of the Comprehensible Japanese website. I did not wish to have that code public, so I'm making a CLI to add single YouTube videos at a time to the project's video storage S3 bucket.
 
-To add videos, run the CLI script using `node content-generation/content-manager`. It presents some options to edit the `manifest` files and videos stored in S3. (Only adding videos is currently implemented)
+To add videos, run the CLI script using `node content/manager`. It presents some options to edit the `manifest` files and videos stored in S3. (Only adding videos is currently implemented)
 
 The general flow of downloading videos is
 

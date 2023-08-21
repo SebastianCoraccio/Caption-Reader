@@ -28,7 +28,7 @@ function processVttFile(videoId) {
   return execCommand('arch', [
     '-x86_64',
     'python3',
-    'content-generation/process-vtt.py',
+    'content/process-vtt.py',
     videoId,
   ]);
 }
@@ -45,10 +45,11 @@ async function processYouTubeVideo({directory, youtubeId, title}) {
 
   console.log(`Starting download of ${title}`);
   await downloadYoutubeData({youtubeId, title});
+  console.log('Download complete');
 
   console.log('Processing vtt...');
   await processVttFile(title);
-  console.log('Processing vtt complete.');
+  console.log('Processing vtt complete');
 
   await uploadToS3({
     file: `${title}.json`,

@@ -1,55 +1,20 @@
 import sys
-import re
 import MeCab
 import json
-
+import jUtils
 print(sys.argv)
 
-HIRAGANA_UNICODE_TABLE_WIDTH = 96
 readingLookupTable = {}
 tagger = MeCab.Tagger()
 
-# --- Helpers -------------------------------------------------------
-
-def isKanji(character):
-  return re.match("[\u4e00-\u9faf]|[\u3400-\u4dbf]|々", character)
-
-def isKatakana(character):
-    return re.match(
-      "[\u30A1-\u30FA\u30FD-\u30FF\u31F0-\u31FF\u32D0-\u32FE\u3300-\u3357\uFF66-\uFF6F\uFF71-\uFF9D]", character
-    )   
-
-def textIncludesKanji(text):
-    for char in text: 
-        if(isKanji(char)):
-           return True
-    return False
-
-def textOnlyIncludesKanji(text): 
-    for char in text: 
-        if(not isKanji(char)):
-           return False
-    return True
-
-def convertKatakanaToHiragana(katakana):
-    acc = ""
-    print(katakana)
-    for character in katakana:
-        if(not isKatakana(character)):
-            acc += character
-        else:
-            acc += chr(ord(character) - HIRAGANA_UNICODE_TABLE_WIDTH)
-    return acc
-
-# -------------------------------------------------------------------
-
-# Assumes kanjiText begins with kanji
 def requestReadings(kanjiText, hiraganaString):
+    assert jUtils.isKanji(kanjiText[0]), 'First character is kanji'
+
     readings = []
     while(kanjiText != ""):
         # separate chunk of kanji from string
         kanji = ""
-        while(kanjiText != "" and isKanji(kanjiText[0])):
+        while(kanjiText != "" and jUtils.isKanji(kanjiText[0])):
             kanji += kanjiText[0]
             kanjiText = kanjiText[1:]
 
@@ -59,7 +24,7 @@ def requestReadings(kanjiText, hiraganaString):
         readings.append({'text':kanji, 'reading': reading})
 
         nonKanji = ""
-        while(kanjiText != "" and not isKanji(kanjiText[0])):
+        while(kanjiText != "" and not jUtils.isKanji(kanjiText[0])):
             nonKanji += kanjiText[0]
             kanjiText = kanjiText[1:]
 
@@ -72,7 +37,7 @@ def requestReadings(kanjiText, hiraganaString):
 def getReading(kanjiText, hiraganaString):
     originalText = kanjiText
     # text without kanji can be returned as is
-    if(not textIncludesKanji(kanjiText)):
+    if(not jUtils.textIncludesKanji(kanjiText)):
         return [{'text': kanjiText}]
 
     # ambiguous readings are verified by script user and stored for repeats
@@ -83,8 +48,9 @@ def getReading(kanjiText, hiraganaString):
 
     # remove any matching characters at the start of the strings
     leadingHiragana = ""
-    if(not isKanji(kanjiText[0])):
-        while(kanjiText[0] == hiraganaString[0] or convertKatakanaToHiragana(kanjiText[0]) == hiraganaString[0]):
+    if(not jUtils.isKanji(kanjiText[0])):
+        while(kanjiText[0] == hiraganaString[0] or 
+              jUtils.convertKatakanaToHiragana(kanjiText[0]) == hiraganaString[0]):
             leadingHiragana += kanjiText[0]
             kanjiText = kanjiText[1:]
             hiraganaString = hiraganaString[1:]
@@ -94,24 +60,20 @@ def getReading(kanjiText, hiraganaString):
 
     # remove any matching characters at the end of the strings
     trailingHiragana = ""
-    if(not isKanji(kanjiText[-1])):
-        while(kanjiText[-1] == hiraganaString[-1] or convertKatakanaToHiragana(kanjiText[-1]) == hiraganaString[-1]):
+    if(not jUtils.isKanji(kanjiText[-1])):
+        while(kanjiText[-1] == hiraganaString[-1] or 
+              jUtils.convertKatakanaToHiragana(kanjiText[-1]) == hiraganaString[-1]):
             trailingHiragana = kanjiText[-1] + trailingHiragana
             kanjiText = kanjiText[0:-1]
             hiraganaString = hiraganaString[0:-1]
  
-    # no ambiguity possible, can confidently return full hiragana
-    if(textOnlyIncludesKanji(kanjiText)):
+    if(jUtils.textOnlyIncludesKanji(kanjiText)):
+        # no ambiguity possible, can confidently return full hiragana
         readings.append({'text': kanjiText, 'reading':hiraganaString})
-        if(trailingHiragana != ''):
-            readings.append({'text': trailingHiragana})
-        return readings
+    else:
+        print(f'Unable to determine reading for {kanjiText}({hiraganaString})')
+        readings += requestReadings(kanjiText, hiraganaString)
 
-    print(f'Unable to determine reading for {kanjiText}({hiraganaString})')
-
-    readings += requestReadings(kanjiText, hiraganaString)
-    
-    # TODO I dont like this trailing check is duplicated above
     if(trailingHiragana != ''):
         readings.append({'text': trailingHiragana})
 
@@ -127,20 +89,20 @@ def normalizeCaption(caption):
     # Each line has the token text, reading, and grammar information
     tokenizedString = tagger.parse(caption)
     tokenStrings = tokenizedString.split("\n")
-    # The final elements are ["EOS", ""] and that needs to be removed
+
+    # The final elements are ["EOS", ""] and need to be removed
     tokenStrings = tokenStrings[:-2]
 
     tokensWithReadings = []
     for tokenString in tokenStrings:
         tokenInfo = tokenString.split("\t")
         originalText, _pronunciation, reading, *_rest = tokenInfo
-        tokensWithReadings += getReading(originalText, convertKatakanaToHiragana(reading))
+        tokensWithReadings += getReading(originalText, jUtils.convertKatakanaToHiragana(reading))
     return tokensWithReadings
-
 
 def readChunk(chunk):
     # The formatting of the vtt file can result 
-    # in empty chunks, which must be filtered
+    # in empty chunks, which must be filtered out
     if(len(chunk) < 2): 
         return
 
@@ -185,5 +147,6 @@ def main(videoId):
 
 
 videoId = sys.argv[1]
+
 print(f'Processing vtt file of {videoId}')
 main(videoId)
