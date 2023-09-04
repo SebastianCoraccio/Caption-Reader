@@ -21,7 +21,7 @@ interface Props {
 
 export function Button({onPress, children}: Props) {
   const {themeStyle} = useContext(ThemeContext);
-  console.log(typeof children);
+
   return (
     <Pressable
       style={[

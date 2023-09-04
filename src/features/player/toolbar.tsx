@@ -1,8 +1,7 @@
 import React, {useCallback} from 'react';
-import {StyleSheet, Text, TouchableOpacity, View} from 'react-native';
+import {StyleSheet, Text, View} from 'react-native';
 import {Button} from '../../lib/button';
 import {typography} from '../../lib/styles';
-import {ThemedText} from '../../lib/themed-text';
 import {useSettings, updateSetting} from '../../services/settings';
 import {Colors} from '../../services/theme-context';
 
@@ -21,7 +20,11 @@ const styles = StyleSheet.create({
   },
 });
 
-export function Toolbar() {
+interface Props {
+  onToggleCaptions: () => void;
+}
+
+export function Toolbar({onToggleCaptions}: Props) {
   const {furiganaVisible} = useSettings();
 
   const handleToggle = useCallback(() => {
@@ -30,7 +33,7 @@ export function Toolbar() {
 
   return (
     <View style={styles.container}>
-      <Button>Captions</Button>
+      <Button onPress={onToggleCaptions}>Captions</Button>
       <Button onPress={handleToggle}>
         <Text style={[typography.bodyBold, styles.text]}>
           {furiganaVisible ? '👀' : '🙈'}&nbsp;Furi

@@ -1,5 +1,12 @@
+import {BlurView} from '@react-native-community/blur';
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
-import {ScrollView, StyleSheet, useWindowDimensions, View} from 'react-native';
+import {
+  Animated,
+  ScrollView,
+  StyleSheet,
+  useWindowDimensions,
+  View,
+} from 'react-native';
 import Video from 'react-native-video';
 import {S3_STORAGE_BASE_URL} from '../../../config';
 import {FauxHeader} from '../../lib/faux-header';
@@ -31,6 +38,13 @@ const styles = StyleSheet.create({
   fullHeightContainer: {
     height: '100%',
   },
+  captionOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    bottom: 0,
+    right: 0,
+  },
 });
 
 interface Props {
@@ -53,6 +67,7 @@ export function Player({title, folder}: Props) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPaused, setIsPaused] = useState(true);
   const [progress, setProgress] = useState(0);
+  const [isHidingCaptions, setIsHidingCaptions] = useState(true);
   const isTablet = useIsTablet();
   const {captions} = useCaptions(title, folder);
   const handleTimeChange = useCallback(
@@ -120,6 +135,17 @@ export function Player({title, folder}: Props) {
       );
     });
   }, [captions, handlePress, currentIndex]);
+
+  const opacityAnim = useRef(new Animated.Value(1)).current;
+
+  useEffect(() => {
+    Animated.timing(opacityAnim, {
+      toValue: isHidingCaptions ? 1 : 0,
+      duration: 100,
+      useNativeDriver: false,
+    }).start();
+  }, [opacityAnim, isHidingCaptions]);
+
   return (
     <ThemedView style={[styles.fullHeightContainer]}>
       {isTablet && <FauxHeader title={unslug(title)} />}
@@ -132,7 +158,12 @@ export function Player({title, folder}: Props) {
         onRestart={handleRestart}
       />
       <ProgressBar progress={progress} />
-      <Toolbar />
+      <Toolbar
+        onToggleCaptions={() => {
+          setIsHidingCaptions(!isHidingCaptions);
+        }}
+      />
+
       <View style={styles.fullHeightContainer}>
         {captionElements ? (
           <ScrollView style={styles.scrollContainer} ref={scrollRef}>
@@ -142,6 +173,20 @@ export function Player({title, folder}: Props) {
         ) : (
           <CaptionsSkeleton />
         )}
+        <Animated.View
+          style={[
+            styles.captionOverlay,
+            {
+              opacity: opacityAnim,
+            },
+          ]}>
+          <BlurView
+            style={styles.captionOverlay}
+            blurType="dark"
+            blurAmount={6}
+            reducedTransparencyFallbackColor="white"
+          />
+        </Animated.View>
       </View>
     </ThemedView>
   );
