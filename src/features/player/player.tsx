@@ -11,6 +11,7 @@ import {unslug} from '../../services/unslug';
 import {useIsTablet} from '../../services/use-is-tablet';
 import {Caption, CaptionSkeleton} from './caption';
 import {ProgressBar} from './progress-bar';
+import {Toolbar} from './toolbar';
 import {VideoPlayer} from './video-player';
 
 const styles = StyleSheet.create({
@@ -134,6 +135,7 @@ export function Player({title, folder}: Props) {
         onRestart={handleRestart}
       />
       <ProgressBar progress={progress} />
+      <Toolbar />
       <View style={styles.fullHeightContainer}>
         {captionElements ? (
           <ScrollView style={styles.scrollContainer} ref={scrollRef}>
