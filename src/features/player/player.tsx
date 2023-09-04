@@ -160,6 +160,7 @@ export function Player({title, folder}: Props) {
       />
       <ProgressBar progress={progress} />
       <Toolbar
+        isHidingCaptions={isHidingCaptions}
         onToggleCaptions={() => {
           setIsHidingCaptions(!isHidingCaptions);
         }}

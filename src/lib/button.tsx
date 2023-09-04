@@ -8,7 +8,7 @@ const styles = StyleSheet.create({
   baseStyle: {
     height: 40,
     padding: 8,
-    borderRadius: 4,
+    borderRadius: 8,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -24,6 +24,7 @@ export function Button({onPress, children}: Props) {
 
   return (
     <Pressable
+      hitSlop={10}
       style={[
         styles.baseStyle,
         {
