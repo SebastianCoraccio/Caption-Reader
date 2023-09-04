@@ -67,7 +67,10 @@ export function Player({title, folder}: Props) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPaused, setIsPaused] = useState(true);
   const [progress, setProgress] = useState(0);
-  const [isHidingCaptions, setIsHidingCaptions] = useState(true);
+
+  const [isHidingCaptions, setIsHidingCaptions] = useState(false);
+  const captionOpacityAnim = useRef(new Animated.Value(0)).current;
+
   const isTablet = useIsTablet();
   const {captions} = useCaptions(title, folder);
   const handleTimeChange = useCallback(
@@ -136,15 +139,13 @@ export function Player({title, folder}: Props) {
     });
   }, [captions, handlePress, currentIndex]);
 
-  const opacityAnim = useRef(new Animated.Value(1)).current;
-
   useEffect(() => {
-    Animated.timing(opacityAnim, {
+    Animated.timing(captionOpacityAnim, {
       toValue: isHidingCaptions ? 1 : 0,
       duration: 100,
       useNativeDriver: false,
     }).start();
-  }, [opacityAnim, isHidingCaptions]);
+  }, [captionOpacityAnim, isHidingCaptions]);
 
   return (
     <ThemedView style={[styles.fullHeightContainer]}>
@@ -177,7 +178,7 @@ export function Player({title, folder}: Props) {
           style={[
             styles.captionOverlay,
             {
-              opacity: opacityAnim,
+              opacity: captionOpacityAnim,
             },
           ]}>
           <BlurView
