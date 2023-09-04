@@ -3,7 +3,6 @@ import {ScrollView, StyleSheet, useWindowDimensions, View} from 'react-native';
 import Video from 'react-native-video';
 import {S3_STORAGE_BASE_URL} from '../../../config';
 import {FauxHeader} from '../../lib/faux-header';
-import {FuriganaToggle} from '../../lib/furigana-toggle';
 import {ThemedView} from '../../lib/themed-view';
 import {useCaptions} from '../../services/api';
 import {addRecent} from '../../services/recents';
@@ -123,9 +122,7 @@ export function Player({title, folder}: Props) {
   }, [captions, handlePress, currentIndex]);
   return (
     <ThemedView style={[styles.fullHeightContainer]}>
-      {isTablet && (
-        <FauxHeader title={unslug(title)} headerRight={FuriganaToggle} />
-      )}
+      {isTablet && <FauxHeader title={unslug(title)} />}
       <VideoPlayer
         url={`${S3_STORAGE_BASE_URL}${folder}${title}.mp4`}
         onProgress={handleTimeChange}

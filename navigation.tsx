@@ -6,7 +6,6 @@ import {HomeScreen} from './src/features/home/screen';
 import {VideoListScreen} from './src/features/video-list/screen';
 import {useIsTablet} from './src/services/use-is-tablet';
 import {AllScreen} from './src/features/tablet-layout/screen';
-import {FuriganaToggle} from './src/lib/furigana-toggle';
 import {ThemeContext} from './src/services/theme-context';
 
 export type StackParamList = {
@@ -66,7 +65,6 @@ export function Navigation() {
         options={({route}) => ({
           ...baseScreenStyles,
           title: unslug(route.params.title),
-          headerRight: FuriganaToggle,
         })}
       />
     </Stack.Navigator>
