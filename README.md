@@ -113,5 +113,4 @@ Check out the files if you want a complete run-through of how this actually work
 
 ## Future improvements
 
-- There are some rerendering issues with the captions. It is really only noticible when switching themes on the player screen.
 - Keyboard support. Like tablet support, it's not super useful all the time. I'm more interested in learning how to implement it in the context of a mobile app.

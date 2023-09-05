@@ -1,5 +1,12 @@
 import {BlurView} from '@react-native-community/blur';
-import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
+import React, {
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import {
   Animated,
   ScrollView,
@@ -13,6 +20,7 @@ import {FauxHeader} from '../../lib/faux-header';
 import {ThemedView} from '../../lib/themed-view';
 import {useCaptions} from '../../services/api';
 import {addRecent} from '../../services/recents';
+import {ThemeContext} from '../../services/theme-context';
 import {unslug} from '../../services/unslug';
 import {useIsTablet} from '../../services/use-is-tablet';
 import {Caption, CaptionSkeleton} from './caption';
@@ -60,6 +68,8 @@ export function Player({title, folder}: Props) {
     [title, folder],
   );
   const {height} = useWindowDimensions();
+
+  const {text} = useContext(ThemeContext);
 
   const scrollRef = useRef<ScrollView>(null);
   const videoRef = useRef<Video>(null);
@@ -144,11 +154,12 @@ export function Player({title, folder}: Props) {
             index={index}
             onPress={handlePress}
             furiganaOpacityAnimation={furiganaOpacityAnimation}
+            textColorAnimation={text}
           />
         </View>
       );
     });
-  }, [captions, handlePress, currentIndex, furiganaOpacityAnimation]);
+  }, [captions, currentIndex, handlePress, furiganaOpacityAnimation, text]);
 
   useEffect(() => {
     Animated.timing(captionOpacityAnim, {

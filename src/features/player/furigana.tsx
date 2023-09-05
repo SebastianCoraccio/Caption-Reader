@@ -2,7 +2,6 @@ import React, {Fragment, useMemo} from 'react';
 import {Animated} from 'react-native';
 import {StyleSheet, View} from 'react-native';
 
-import {ThemedText} from '../../lib/themed-text';
 import {Line} from '../../services/api';
 import {Colors} from '../../services/theme-context';
 
@@ -34,9 +33,14 @@ const styles = StyleSheet.create({
 interface Props {
   lines: Line[][];
   furiganaOpacityAnimation: Animated.Value;
+  textColorAnimation: Animated.AnimatedInterpolation<string | number>;
 }
 
-export function Furigana({lines, furiganaOpacityAnimation}: Props) {
+export function Furigana({
+  lines,
+  furiganaOpacityAnimation,
+  textColorAnimation,
+}: Props) {
   const furigana = useMemo(() => {
     return (
       <Fragment>
@@ -47,16 +51,27 @@ export function Furigana({lines, furiganaOpacityAnimation}: Props) {
                 style={styles.focus}
                 key={`line-${lineIndex}-${chunkIndex}`}>
                 {(line.some(i => Boolean(i.reading)) || chunk.reading) && (
-                  <ThemedText
+                  <Animated.Text
                     style={[
                       styles.furiganaFont,
-                      {opacity: furiganaOpacityAnimation},
+                      {
+                        opacity: furiganaOpacityAnimation,
+                        color: textColorAnimation,
+                      },
                     ]}>
                     {chunk.reading}
-                  </ThemedText>
+                  </Animated.Text>
                 )}
                 <View>
-                  <ThemedText style={styles.textFont}>{chunk.text}</ThemedText>
+                  <Animated.Text
+                    style={[
+                      styles.textFont,
+                      {
+                        color: textColorAnimation,
+                      },
+                    ]}>
+                    {chunk.text}
+                  </Animated.Text>
                 </View>
               </View>
             ))}
@@ -64,6 +79,6 @@ export function Furigana({lines, furiganaOpacityAnimation}: Props) {
         ))}
       </Fragment>
     );
-  }, [lines, furiganaOpacityAnimation]);
+  }, [lines, furiganaOpacityAnimation, textColorAnimation]);
   return furigana;
 }

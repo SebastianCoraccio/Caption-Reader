@@ -1,11 +1,12 @@
-import React from 'react';
+import React, {useCallback, useContext} from 'react';
 import {StyleSheet, Text, View} from 'react-native';
 import {Button} from '../../lib/button';
 import {ClosedEyeIcon} from '../../lib/icons/closed-eye';
 import {DownloadIcon} from '../../lib/icons/download';
 import {OpenEyeIcon} from '../../lib/icons/open-eye';
 import {typography} from '../../lib/styles';
-import {Colors} from '../../services/theme-context';
+import {updateSetting} from '../../services/settings';
+import {Colors, ThemeContext} from '../../services/theme-context';
 
 const styles = StyleSheet.create({
   container: {
@@ -42,6 +43,12 @@ export function Toolbar({
   onToggleFurigana,
   isHidingFurigana,
 }: Props) {
+  const {theme} = useContext(ThemeContext);
+
+  const handleThemeChange = useCallback(() => {
+    updateSetting({theme: theme === 'dark' ? 'light' : 'dark'});
+  }, [theme]);
+
   return (
     <View style={styles.container}>
       <Button onPress={onToggleCaptions}>
@@ -64,7 +71,7 @@ export function Toolbar({
           <Text style={[typography.bodyBold, styles.text]}>&nbsp;Furigana</Text>
         </View>
       </Button>
-      <Button disabled>
+      <Button onPress={handleThemeChange}>
         <View style={styles.iconButton}>
           <DownloadIcon color={Colors.white} />
           <Text style={[typography.bodyBold, styles.text]}>&nbsp;Download</Text>

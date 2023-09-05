@@ -4,6 +4,7 @@ import React, {
   useEffect,
   useState,
   useRef,
+  useMemo,
 } from 'react';
 import {Animated, StatusBar, useColorScheme} from 'react-native';
 import {addListener, removeListener} from './async-storage';
@@ -112,43 +113,42 @@ export function ThemeContextProvider({children}: {children: ReactNode}) {
     };
   }, [systemTheme, theme]);
 
-  const background = themeAnimation.interpolate({
-    inputRange: [0, 1],
-    outputRange: [lightTheme.background, darkTheme.background],
-  });
-  const card = themeAnimation.interpolate({
-    inputRange: [0, 1],
-    outputRange: [lightTheme.card, darkTheme.card],
-  });
-  const text = themeAnimation.interpolate({
-    inputRange: [0, 1],
-    outputRange: [lightTheme.text, darkTheme.text],
-  });
-  const border = themeAnimation.interpolate({
-    inputRange: [0, 1],
-    outputRange: [lightTheme.border, darkTheme.border],
-  });
-  // TODO define different primary color for the themes
-  const primary = themeAnimation.interpolate({
-    inputRange: [0, 1],
-    outputRange: [lightTheme.primary, darkTheme.primary],
-  });
-  const primaryLighter = themeAnimation.interpolate({
-    inputRange: [0, 1],
-    outputRange: [lightTheme.primaryLighter, darkTheme.primaryLighter],
-  });
+  const animations = useMemo(
+    () => ({
+      background: themeAnimation.interpolate({
+        inputRange: [0, 1],
+        outputRange: [lightTheme.background, darkTheme.background],
+      }),
+      card: themeAnimation.interpolate({
+        inputRange: [0, 1],
+        outputRange: [lightTheme.card, darkTheme.card],
+      }),
+      text: themeAnimation.interpolate({
+        inputRange: [0, 1],
+        outputRange: [lightTheme.text, darkTheme.text],
+      }),
+      border: themeAnimation.interpolate({
+        inputRange: [0, 1],
+        outputRange: [lightTheme.border, darkTheme.border],
+      }),
+      primary: themeAnimation.interpolate({
+        inputRange: [0, 1],
+        outputRange: [lightTheme.primary, darkTheme.primary],
+      }),
+      primaryLighter: themeAnimation.interpolate({
+        inputRange: [0, 1],
+        outputRange: [lightTheme.primaryLighter, darkTheme.primaryLighter],
+      }),
+    }),
+    [themeAnimation],
+  );
 
   return (
     <ThemeContext.Provider
       value={{
         theme,
         themeStyle: type === 'light' ? lightTheme : darkTheme,
-        background,
-        card,
-        text,
-        border,
-        primary,
-        primaryLighter,
+        ...animations,
       }}>
       <StatusBar
         barStyle={currentTheme === 'light' ? 'dark-content' : 'light-content'}

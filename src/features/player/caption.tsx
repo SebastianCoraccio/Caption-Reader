@@ -57,6 +57,7 @@ interface Props {
   timestamp: number;
   index: number;
   furiganaOpacityAnimation: Animated.Value;
+  textColorAnimation: Animated.AnimatedInterpolation<string | number>;
 }
 
 export function Caption({
@@ -66,6 +67,7 @@ export function Caption({
   index,
   timestamp,
   furiganaOpacityAnimation,
+  textColorAnimation,
 }: Props) {
   const activeAnim = useRef(new Animated.Value(0)).current;
   const pressedAnim = useRef(new Animated.Value(0)).current;
@@ -186,6 +188,7 @@ export function Caption({
           <Furigana
             lines={lines}
             furiganaOpacityAnimation={furiganaOpacityAnimation}
+            textColorAnimation={textColorAnimation}
           />
         </Animated.View>
       </Animated.View>
