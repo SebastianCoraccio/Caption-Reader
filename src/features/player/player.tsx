@@ -116,6 +116,16 @@ export function Player({title, folder}: Props) {
     }
   }, []);
 
+  const [isHidingFurigana, setIsHidingFurigana] = useState(false);
+  const furiganaOpacityAnimation = useRef(new Animated.Value(1)).current;
+  useEffect(() => {
+    Animated.timing(furiganaOpacityAnimation, {
+      toValue: isHidingFurigana ? 0 : 1,
+      duration: 100,
+      useNativeDriver: false,
+    }).start();
+  }, [furiganaOpacityAnimation, isHidingFurigana]);
+
   const captionElements = useMemo(() => {
     if (!captions) {
       return null;
@@ -133,11 +143,12 @@ export function Player({title, folder}: Props) {
             timestamp={chunk.timestamp}
             index={index}
             onPress={handlePress}
+            furiganaOpacityAnimation={furiganaOpacityAnimation}
           />
         </View>
       );
     });
-  }, [captions, handlePress, currentIndex]);
+  }, [captions, handlePress, currentIndex, furiganaOpacityAnimation]);
 
   useEffect(() => {
     Animated.timing(captionOpacityAnim, {
@@ -161,8 +172,12 @@ export function Player({title, folder}: Props) {
       <ProgressBar progress={progress} />
       <Toolbar
         isHidingCaptions={isHidingCaptions}
+        isHidingFurigana={isHidingFurigana}
         onToggleCaptions={() => {
           setIsHidingCaptions(!isHidingCaptions);
+        }}
+        onToggleFurigana={() => {
+          setIsHidingFurigana(!isHidingFurigana);
         }}
       />
 

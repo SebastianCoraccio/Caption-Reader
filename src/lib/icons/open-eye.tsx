@@ -2,7 +2,7 @@ import React from 'react';
 import Svg, {Circle, Path} from 'react-native-svg';
 
 interface Props {
-  color: string;
+  color?: string;
 }
 
 export function OpenEyeIcon({color = '#000'}: Props) {

@@ -1,10 +1,9 @@
-import React, {Fragment, useEffect, useMemo, useRef} from 'react';
+import React, {Fragment, useMemo} from 'react';
 import {Animated} from 'react-native';
 import {StyleSheet, View} from 'react-native';
 
 import {ThemedText} from '../../lib/themed-text';
 import {Line} from '../../services/api';
-import {useSettings} from '../../services/settings';
 import {Colors} from '../../services/theme-context';
 
 const styles = StyleSheet.create({
@@ -34,22 +33,10 @@ const styles = StyleSheet.create({
 
 interface Props {
   lines: Line[][];
-  showFurigana?: boolean;
+  furiganaOpacityAnimation: Animated.Value;
 }
 
-export function Furigana({lines, showFurigana}: Props) {
-  const {furiganaVisible} = useSettings();
-
-  const opacityAnim = useRef(new Animated.Value(0)).current;
-
-  useEffect(() => {
-    Animated.timing(opacityAnim, {
-      toValue: furiganaVisible ? 1 : 0,
-      duration: 100,
-      useNativeDriver: false,
-    }).start();
-  }, [opacityAnim, furiganaVisible]);
-
+export function Furigana({lines, furiganaOpacityAnimation}: Props) {
   const furigana = useMemo(() => {
     return (
       <Fragment>
@@ -59,13 +46,15 @@ export function Furigana({lines, showFurigana}: Props) {
               <View
                 style={styles.focus}
                 key={`line-${lineIndex}-${chunkIndex}`}>
-                {showFurigana &&
-                  (line.some(i => Boolean(i.reading)) || chunk.reading) && (
-                    <ThemedText
-                      style={[styles.furiganaFont, {opacity: opacityAnim}]}>
-                      {chunk.reading}
-                    </ThemedText>
-                  )}
+                {(line.some(i => Boolean(i.reading)) || chunk.reading) && (
+                  <ThemedText
+                    style={[
+                      styles.furiganaFont,
+                      {opacity: furiganaOpacityAnimation},
+                    ]}>
+                    {chunk.reading}
+                  </ThemedText>
+                )}
                 <View>
                   <ThemedText style={styles.textFont}>{chunk.text}</ThemedText>
                 </View>
@@ -75,6 +64,6 @@ export function Furigana({lines, showFurigana}: Props) {
         ))}
       </Fragment>
     );
-  }, [lines, showFurigana, opacityAnim]);
+  }, [lines, furiganaOpacityAnimation]);
   return furigana;
 }

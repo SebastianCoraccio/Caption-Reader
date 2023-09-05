@@ -56,9 +56,17 @@ interface Props {
   onPress: (index: number, timestamp: number) => void;
   timestamp: number;
   index: number;
+  furiganaOpacityAnimation: Animated.Value;
 }
 
-export function Caption({isActive, lines, onPress, index, timestamp}: Props) {
+export function Caption({
+  isActive,
+  lines,
+  onPress,
+  index,
+  timestamp,
+  furiganaOpacityAnimation,
+}: Props) {
   const activeAnim = useRef(new Animated.Value(0)).current;
   const pressedAnim = useRef(new Animated.Value(0)).current;
   const {
@@ -175,7 +183,10 @@ export function Caption({isActive, lines, onPress, index, timestamp}: Props) {
               ],
             },
           ]}>
-          <Furigana lines={lines} showFurigana />
+          <Furigana
+            lines={lines}
+            furiganaOpacityAnimation={furiganaOpacityAnimation}
+          />
         </Animated.View>
       </Animated.View>
       {isTranslating && (

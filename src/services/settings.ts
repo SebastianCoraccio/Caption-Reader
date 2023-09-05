@@ -3,12 +3,10 @@ import {addListener, getData, removeListener, storeData} from './async-storage';
 
 export interface Settings {
   theme: 'system' | 'light' | 'dark';
-  furiganaVisible: boolean;
 }
 
 const defaultSettings: Settings = {
   theme: 'system',
-  furiganaVisible: true,
 };
 
 export const updateSetting = async (update: Partial<Settings>) => {
