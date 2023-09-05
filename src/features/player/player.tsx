@@ -131,7 +131,7 @@ export function Player({title, folder}: Props) {
   useEffect(() => {
     Animated.timing(furiganaOpacityAnimation, {
       toValue: isHidingFurigana ? 0 : 1,
-      duration: 100,
+      duration: 150,
       useNativeDriver: false,
     }).start();
   }, [furiganaOpacityAnimation, isHidingFurigana]);
@@ -164,7 +164,7 @@ export function Player({title, folder}: Props) {
   useEffect(() => {
     Animated.timing(captionOpacityAnim, {
       toValue: isHidingCaptions ? 1 : 0,
-      duration: 100,
+      duration: 150,
       useNativeDriver: false,
     }).start();
   }, [captionOpacityAnim, isHidingCaptions]);
