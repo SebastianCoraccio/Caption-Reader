@@ -13,7 +13,7 @@ const styles = StyleSheet.create({
     padding: 8,
     borderBottomWidth: StyleSheet.hairlineWidth,
     flexDirection: 'row',
-    justifyContent: 'space-evenly',
+    justifyContent: 'space-between',
   },
   toggleButton: {
     flexDirection: 'row',
@@ -64,7 +64,7 @@ export function Toolbar({onToggleCaptions, isHidingCaptions}: Props) {
           <Text style={[typography.bodyBold, styles.text]}>&nbsp;Furigana</Text>
         </View>
       </Button>
-      <Button onPress={handleToggle}>
+      <Button onPress={handleToggle} disabled>
         <View style={styles.iconButton}>
           <DownloadIcon color={Colors.white} />
           <Text style={[typography.bodyBold, styles.text]}>&nbsp;Download</Text>

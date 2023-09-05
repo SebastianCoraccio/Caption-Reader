@@ -17,19 +17,23 @@ const styles = StyleSheet.create({
 interface Props {
   children: ReactNode;
   onPress?: (event: GestureResponderEvent) => void;
+  disabled?: boolean;
 }
 
-export function Button({onPress, children}: Props) {
+export function Button({onPress, children, disabled}: Props) {
   const {themeStyle} = useContext(ThemeContext);
   const [isPressed, setIsPressed] = useState(false);
 
   return (
     <Pressable
+      disabled={disabled}
       hitSlop={10}
       style={[
         styles.baseStyle,
         {
-          backgroundColor: isPressed
+          backgroundColor: disabled
+            ? Colors.light
+            : isPressed
             ? themeStyle.primaryLighter
             : themeStyle.primary,
         },

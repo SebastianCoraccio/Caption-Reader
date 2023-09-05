@@ -176,6 +176,7 @@ export function Player({title, folder}: Props) {
           <CaptionsSkeleton />
         )}
         <Animated.View
+          pointerEvents={isHidingCaptions ? 'auto' : 'none'}
           style={[
             styles.captionOverlay,
             {
