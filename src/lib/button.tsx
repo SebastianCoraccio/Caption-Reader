@@ -1,4 +1,4 @@
-import React, {useContext} from 'react';
+import React, {useContext, useState} from 'react';
 import {ReactNode} from 'react';
 import {GestureResponderEvent, Pressable, StyleSheet, Text} from 'react-native';
 import {Colors, ThemeContext} from '../services/theme-context';
@@ -21,6 +21,7 @@ interface Props {
 
 export function Button({onPress, children}: Props) {
   const {themeStyle} = useContext(ThemeContext);
+  const [isPressed, setIsPressed] = useState(false);
 
   return (
     <Pressable
@@ -28,10 +29,14 @@ export function Button({onPress, children}: Props) {
       style={[
         styles.baseStyle,
         {
-          backgroundColor: themeStyle.primary,
+          backgroundColor: isPressed
+            ? themeStyle.primaryLighter
+            : themeStyle.primary,
         },
       ]}
-      onPress={onPress}>
+      onPress={onPress}
+      onPressIn={() => setIsPressed(true)}
+      onPressOut={() => setIsPressed(false)}>
       {typeof children === 'string' ? (
         <Text style={[typography.bodyBold, {color: Colors.white}]}>
           {children}

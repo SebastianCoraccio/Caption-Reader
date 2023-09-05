@@ -18,6 +18,7 @@ interface Theme {
   text: string;
   border: string;
   primary: string;
+  primaryLighter: string;
 }
 interface ThemeAnimated {
   theme: 'light' | 'dark' | 'system';
@@ -27,10 +28,12 @@ interface ThemeAnimated {
   text: Animated.AnimatedInterpolation<string | number>;
   border: Animated.AnimatedInterpolation<string | number>;
   primary: Animated.AnimatedInterpolation<string | number>;
+  primaryLighter: Animated.AnimatedInterpolation<string | number>;
 }
 
 export const Colors = {
   primary: '#1292B4',
+  primaryLighter: '#3AAFCE',
   white: '#FFF',
   lighter: '#F3F3F3',
   light: '#DAE1E7',
@@ -46,6 +49,7 @@ const lightTheme: Theme = {
   text: Colors.black,
   border: Colors.dark,
   primary: Colors.primary,
+  primaryLighter: Colors.primaryLighter,
 };
 const darkTheme: Theme = {
   type: 'dark',
@@ -54,6 +58,7 @@ const darkTheme: Theme = {
   text: Colors.white,
   border: Colors.light,
   primary: Colors.primary,
+  primaryLighter: Colors.primaryLighter,
 };
 
 const defaultTheme: ThemeAnimated = {
@@ -64,6 +69,7 @@ const defaultTheme: ThemeAnimated = {
   text: new Animated.Value(0),
   border: new Animated.Value(0),
   primary: new Animated.Value(0),
+  primaryLighter: new Animated.Value(0),
 };
 
 export const ThemeContext = createContext<ThemeAnimated>(defaultTheme);
@@ -127,6 +133,10 @@ export function ThemeContextProvider({children}: {children: ReactNode}) {
     inputRange: [0, 1],
     outputRange: [lightTheme.primary, darkTheme.primary],
   });
+  const primaryLighter = themeAnimation.interpolate({
+    inputRange: [0, 1],
+    outputRange: [lightTheme.primaryLighter, darkTheme.primaryLighter],
+  });
 
   return (
     <ThemeContext.Provider
@@ -138,6 +148,7 @@ export function ThemeContextProvider({children}: {children: ReactNode}) {
         text,
         border,
         primary,
+        primaryLighter,
       }}>
       <StatusBar
         barStyle={currentTheme === 'light' ? 'dark-content' : 'light-content'}

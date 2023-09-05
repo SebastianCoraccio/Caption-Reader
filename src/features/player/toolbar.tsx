@@ -2,6 +2,7 @@ import React, {useCallback} from 'react';
 import {StyleSheet, Text, View} from 'react-native';
 import {Button} from '../../lib/button';
 import {ClosedEyeIcon} from '../../lib/icons/closed-eye';
+import {DownloadIcon} from '../../lib/icons/download';
 import {OpenEyeIcon} from '../../lib/icons/open-eye';
 import {typography} from '../../lib/styles';
 import {useSettings, updateSetting} from '../../services/settings';
@@ -63,7 +64,12 @@ export function Toolbar({onToggleCaptions, isHidingCaptions}: Props) {
           <Text style={[typography.bodyBold, styles.text]}>&nbsp;Furigana</Text>
         </View>
       </Button>
-      <Button>V Download</Button>
+      <Button onPress={handleToggle}>
+        <View style={styles.iconButton}>
+          <DownloadIcon color={Colors.white} />
+          <Text style={[typography.bodyBold, styles.text]}>&nbsp;Download</Text>
+        </View>
+      </Button>
     </View>
   );
 }
