@@ -1,6 +1,13 @@
 import React, {useContext, useState} from 'react';
 import {ReactNode} from 'react';
-import {GestureResponderEvent, Pressable, StyleSheet, Text} from 'react-native';
+import {
+  GestureResponderEvent,
+  Pressable,
+  StyleProp,
+  StyleSheet,
+  Text,
+  ViewStyle,
+} from 'react-native';
 import {Colors, ThemeContext} from '../services/theme-context';
 import {typography} from './styles';
 
@@ -18,9 +25,10 @@ interface Props {
   children: ReactNode;
   onPress?: (event: GestureResponderEvent) => void;
   disabled?: boolean;
+  style?: StyleProp<ViewStyle>;
 }
 
-export function Button({onPress, children, disabled}: Props) {
+export function Button({onPress, children, disabled, style}: Props) {
   const {themeStyle} = useContext(ThemeContext);
   const [isPressed, setIsPressed] = useState(false);
 
@@ -37,6 +45,7 @@ export function Button({onPress, children, disabled}: Props) {
             ? themeStyle.primaryLighter
             : themeStyle.primary,
         },
+        style,
       ]}
       onPress={onPress}
       onPressIn={() => setIsPressed(true)}

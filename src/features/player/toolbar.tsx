@@ -1,19 +1,22 @@
 import React, {useCallback, useContext} from 'react';
-import {StyleSheet, Text, View} from 'react-native';
+import {ScrollView, StyleSheet, Text, View} from 'react-native';
 import {Button} from '../../lib/button';
 import {ClosedEyeIcon} from '../../lib/icons/closed-eye';
 import {DownloadIcon} from '../../lib/icons/download';
+import {HeartIcon} from '../../lib/icons/heart';
 import {OpenEyeIcon} from '../../lib/icons/open-eye';
-import {typography} from '../../lib/styles';
+import {gutterCompact, gutterLarge, typography} from '../../lib/styles';
 import {updateSetting} from '../../services/settings';
 import {Colors, ThemeContext} from '../../services/theme-context';
 
 const styles = StyleSheet.create({
   container: {
-    padding: 8,
     borderBottomWidth: StyleSheet.hairlineWidth,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    flexShrink: 0,
+  },
+  contentContainer: {
+    marginHorizontal: gutterCompact,
+    marginRight: gutterLarge,
   },
   toggleButton: {
     flexDirection: 'row',
@@ -22,10 +25,12 @@ const styles = StyleSheet.create({
     color: Colors.white,
     paddingTop: 3,
   },
+  button: {
+    marginRight: gutterCompact,
+    marginVertical: gutterCompact,
+  },
   iconButton: {
     flexDirection: 'row',
-    alignContent: 'center',
-    alignItems: 'center',
     justifyContent: 'center',
   },
 });
@@ -50,8 +55,11 @@ export function Toolbar({
   }, [theme]);
 
   return (
-    <View style={styles.container}>
-      <Button onPress={onToggleCaptions}>
+    <ScrollView
+      style={styles.container}
+      horizontal
+      contentContainerStyle={styles.contentContainer}>
+      <Button onPress={onToggleCaptions} style={styles.button}>
         <View style={styles.iconButton}>
           {isHidingCaptions ? (
             <ClosedEyeIcon color={Colors.white} />
@@ -61,7 +69,7 @@ export function Toolbar({
           <Text style={[typography.bodyBold, styles.text]}>&nbsp;Captions</Text>
         </View>
       </Button>
-      <Button onPress={onToggleFurigana}>
+      <Button onPress={onToggleFurigana} style={styles.button}>
         <View style={styles.iconButton}>
           {isHidingFurigana ? (
             <ClosedEyeIcon color={Colors.white} />
@@ -71,12 +79,18 @@ export function Toolbar({
           <Text style={[typography.bodyBold, styles.text]}>&nbsp;Furigana</Text>
         </View>
       </Button>
-      <Button onPress={handleThemeChange}>
+      <Button onPress={handleThemeChange} style={styles.button}>
+        <View style={styles.iconButton}>
+          <HeartIcon color={'rgba(0,0,0,0)'} outline={Colors.white} />
+          <Text style={[typography.bodyBold, styles.text]}>&nbsp;Like</Text>
+        </View>
+      </Button>
+      <Button onPress={handleThemeChange} style={styles.button}>
         <View style={styles.iconButton}>
           <DownloadIcon color={Colors.white} />
           <Text style={[typography.bodyBold, styles.text]}>&nbsp;Download</Text>
         </View>
       </Button>
-    </View>
+    </ScrollView>
   );
 }

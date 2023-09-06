@@ -113,7 +113,6 @@ export function Player({title, folder}: Props) {
   );
 
   const handleCaptionPress = useCallback((_: number, timestamp: number) => {
-    console.log(timestamp);
     if (videoRef && videoRef.current) {
       videoRef.current.seek(timestamp + 0.1);
     }
