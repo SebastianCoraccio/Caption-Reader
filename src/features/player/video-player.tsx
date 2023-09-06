@@ -94,8 +94,13 @@ export const VideoPlayer = React.forwardRef<Video, Props>(
           style={styles.video}
           progressUpdateInterval={250}
           onProgress={({currentTime, playableDuration}) => {
+            // If the user seeks to a position before playing the video
+            // it will incorrectly report playableDuration as 0
+            //
             // '-1' for 1 second before the end of the video
-            setShowRestart(currentTime > playableDuration - 1);
+            setShowRestart(
+              playableDuration !== 0 && currentTime > playableDuration - 1,
+            );
             onProgress(currentTime, playableDuration);
           }}
           paused={paused}

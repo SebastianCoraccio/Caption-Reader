@@ -112,7 +112,8 @@ export function Player({title, folder}: Props) {
     [currentIndex],
   );
 
-  const handlePress = useCallback((_: number, timestamp: number) => {
+  const handleCaptionPress = useCallback((_: number, timestamp: number) => {
+    console.log(timestamp);
     if (videoRef && videoRef.current) {
       videoRef.current.seek(timestamp + 0.1);
     }
@@ -152,14 +153,20 @@ export function Player({title, folder}: Props) {
             lines={chunk.lines}
             timestamp={chunk.timestamp}
             index={index}
-            onPress={handlePress}
+            onPress={handleCaptionPress}
             furiganaOpacityAnimation={furiganaOpacityAnimation}
             textColorAnimation={text}
           />
         </View>
       );
     });
-  }, [captions, currentIndex, handlePress, furiganaOpacityAnimation, text]);
+  }, [
+    captions,
+    currentIndex,
+    handleCaptionPress,
+    furiganaOpacityAnimation,
+    text,
+  ]);
 
   useEffect(() => {
     Animated.timing(captionOpacityAnim, {
