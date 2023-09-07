@@ -1,11 +1,11 @@
-import React, {useContext, useState} from 'react';
+import React, {useContext} from 'react';
 import {ReactNode} from 'react';
 import {
   GestureResponderEvent,
-  Pressable,
   StyleProp,
   StyleSheet,
   Text,
+  TouchableOpacity,
   ViewStyle,
 } from 'react-native';
 import {Colors, ThemeContext} from '../services/theme-context';
@@ -30,26 +30,20 @@ interface Props {
 
 export function Button({onPress, children, disabled, style}: Props) {
   const {themeStyle} = useContext(ThemeContext);
-  const [isPressed, setIsPressed] = useState(false);
 
   return (
-    <Pressable
+    <TouchableOpacity
       disabled={disabled}
       hitSlop={10}
       style={[
         styles.baseStyle,
         {
-          backgroundColor: disabled
-            ? Colors.light
-            : isPressed
-            ? themeStyle.primaryLighter
-            : themeStyle.primary,
+          backgroundColor: disabled ? Colors.light : themeStyle.primary,
         },
         style,
       ]}
       onPress={onPress}
-      onPressIn={() => setIsPressed(true)}
-      onPressOut={() => setIsPressed(false)}>
+      activeOpacity={0.8}>
       {typeof children === 'string' ? (
         <Text style={[typography.bodyBold, {color: Colors.white}]}>
           {children}
@@ -57,6 +51,6 @@ export function Button({onPress, children, disabled, style}: Props) {
       ) : (
         children
       )}
-    </Pressable>
+    </TouchableOpacity>
   );
 }
