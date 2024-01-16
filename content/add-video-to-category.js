@@ -36,7 +36,7 @@ function processVttFile(videoId) {
 async function processYouTubeVideo({directory, youtubeId, title}) {
   let fileManifest = [];
   try {
-    fileManifest = await downloadFromS3({file: `${directory}/.manifest.json`});
+    fileManifest = await downloadFromS3({file: `${directory}.manifest.json`});
   } catch (err) {
     if (err.code !== 'NoSuchKey') {
       throw err;

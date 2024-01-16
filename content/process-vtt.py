@@ -108,12 +108,14 @@ def readChunk(chunk):
 
     # Example chunk formatting:
     # [
+    #    7 // This first number is optional
     #   "00:03:12.480 --> 00:03:15.260",
     #   "日本では",
     #   "夏に"
     # ]
     # The number of lines varies but there is at least 1
-    timestamp, *captions = chunk
+    line1, line2, *captions = chunk
+    timestamp = line1 if ":" in line1 else line2
     lines = []
     for caption in captions:
         lines.append(normalizeCaption(caption))
